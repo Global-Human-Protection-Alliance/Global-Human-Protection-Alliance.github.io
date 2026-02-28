@@ -168,115 +168,160 @@ html,body{height:100%;overflow:hidden;background:var(--bg-deep);color:var(--text
 .nav-actions{display:none}
 }
 @media(max-width:480px){.source-grid{grid-template-columns:1fr}}
+.lang-switcher{display:flex;gap:2px;margin-right:8px}
+.lang-btn{padding:4px 8px;border-radius:6px;background:var(--glass);border:1px solid var(--glass-border);color:var(--text-secondary);cursor:pointer;font-family:var(--font-mono);font-size:.68rem;transition:all .2s}
+.lang-btn:hover{background:rgba(255,255,255,.08);color:var(--text-primary)}
+.lang-btn.active{background:rgba(255,77,109,.12);color:var(--accent);border-color:rgba(255,77,109,.25)}
+.export-dropdown{position:absolute;top:100%;right:0;background:var(--bg-panel);border:1px solid var(--glass-border);border-radius:10px;padding:6px;min-width:150px;display:none;z-index:10;backdrop-filter:blur(20px)}
+.export-dropdown.visible{display:block}
+.export-item{padding:8px 12px;font-size:.78rem;color:var(--text-secondary);cursor:pointer;border-radius:6px;transition:all .15s;display:flex;align-items:center;gap:8px}
+.export-item:hover{background:rgba(255,255,255,.05);color:var(--text-primary)}
+.compare-panel{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:1100;background:var(--bg-panel);border:1px solid var(--glass-border);border-radius:16px;padding:24px;backdrop-filter:blur(24px);max-width:90vw;max-height:80vh;overflow-y:auto;display:none}
+.compare-panel.open{display:block}
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.compare-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:16px}
+.presentation-mode #sidebar,.presentation-mode #top-bar,.presentation-mode #ticker,.presentation-mode #legend{display:none!important}
+.presentation-mode #detail-panel{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.focus-visible:focus{outline:2px solid var(--accent);outline-offset:2px}
+.high-contrast{--bg-deep:#000;--bg-panel:rgba(0,0,0,.95);--text-primary:#fff;--text-secondary:#ccc;--glass-border:rgba(255,255,255,.3)}
+.skip-link{position:absolute;top:-100%;left:16px;z-index:9999;padding:8px 16px;background:var(--accent);color:#fff;border-radius:8px;font-size:.85rem;transition:top .2s}
+.skip-link:focus{top:8px}
+#freshness-indicator{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:.62rem;padding:2px 8px;border-radius:4px;background:var(--glass)}
+.freshness-dot{width:6px;height:6px;border-radius:50%}
+.freshness-fresh{background:#2ec4b6}
+.freshness-stale{background:#fcbf49}
+.freshness-old{background:#e63946}
+.chart-container{position:relative;height:200px;margin:12px 0}
+.trend-chart-panel{margin-top:10px}
 </style>
 </head>
 <body>
-<div id="loading-screen">
-<h1>SENTINEL</h1>
-<p>Global Trafficking Monitor</p>
+<a href="#map" class="skip-link">Skip to map</a>
+<div id="loading-screen" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+<h1 data-i18n="loading.title">SENTINEL</h1>
+<p data-i18n="loading.subtitle">Global Trafficking Monitor</p>
 <div class="loader-bar"><span id="loader-progress"></span></div>
 <div class="loader-stats"><div id="load-status">Initializing geospatial engine...</div></div>
 </div>
 <div id="top-bar">
 <div class="logo">
 <div class="logo-icon">S</div>
-<div><h1>SENTINEL</h1><span>Real-Time Trafficking Intelligence</span></div>
+<div><h1>SENTINEL</h1><span data-i18n="loading.subtitle">Real-Time Trafficking Intelligence</span></div>
 </div>
 <div class="nav-actions">
-<button class="nav-btn active" id="btn-routes" onclick="toggleLayer('routes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg>Routes</button>
-<button class="nav-btn active" id="btn-hotspots" onclick="toggleLayer('hotspots')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" opacity=".4"/></svg>Hotspots</button>
-<button class="nav-btn active" id="btn-choropleth" onclick="toggleLayer('choropleth')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Choropleth</button>
-<button class="nav-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>Panel</button>
-<button class="nav-btn" onclick="openSources()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Sources</button>
+<span id="freshness-indicator"><span class="freshness-dot freshness-old"></span> Offline</span>
+<div class="lang-switcher">
+<button class="lang-btn active" onclick="setLang('en')">EN</button>
+<button class="lang-btn" onclick="setLang('pt')">PT</button>
+<button class="lang-btn" onclick="setLang('es')">ES</button>
+<button class="lang-btn" onclick="setLang('fr')">FR</button>
+</div>
+<button class="nav-btn active" id="btn-routes" onclick="toggleLayer('routes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg><span data-i18n="nav.routes">Routes</span></button>
+<button class="nav-btn active" id="btn-hotspots" onclick="toggleLayer('hotspots')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" opacity=".4"/></svg><span data-i18n="nav.hotspots">Hotspots</span></button>
+<button class="nav-btn active" id="btn-choropleth" onclick="toggleLayer('choropleth')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span data-i18n="nav.choropleth">Choropleth</span></button>
+<button class="nav-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg><span data-i18n="nav.panel">Panel</span></button>
+<button class="nav-btn" onclick="openSources()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span data-i18n="nav.sources">Sources</span></button>
+<div style="position:relative">
+<button class="nav-btn" onclick="toggleExportMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span data-i18n="nav.export">Export</span></button>
+<div class="export-dropdown" id="export-menu">
+<div class="export-item" onclick="exportCSV()">&#x1F4CA; CSV Data</div>
+<div class="export-item" onclick="exportPDF()">&#x1F4C4; PDF Report</div>
+</div>
+</div>
+<button class="nav-btn" onclick="toggleCompare()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="8" height="18" rx="1"/><rect x="14" y="3" width="8" height="18" rx="1"/></svg><span data-i18n="nav.compare">Compare</span></button>
+<button class="nav-btn" onclick="togglePresentation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span data-i18n="nav.present">Present</span></button>
+<button class="nav-btn" id="btn-heatmap" onclick="toggleHeatmap()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6" opacity=".5"/><circle cx="12" cy="12" r="2" opacity=".3"/></svg><span data-i18n="nav.heatmap">Heatmap</span></button>
 </div>
 </div>
 <div id="map"></div>
-<div id="sidebar">
+<div id="sidebar" role="navigation" aria-label="Map controls">
 <div class="panel" style="padding:14px 16px">
 <div class="search-box">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-<input type="text" id="country-search" placeholder="Search countries..." oninput="handleSearch(this.value)">
+<input type="text" id="country-search" placeholder="Search countries..." data-i18n-placeholder="sidebar.search" aria-label="Search countries" oninput="handleSearch(this.value)">
 <div class="search-results" id="search-results"></div>
 </div>
 <div class="region-nav">
-<button class="region-btn" onclick="zoomRegion('world')">Global</button>
-<button class="region-btn" onclick="zoomRegion('africa')">Africa</button>
-<button class="region-btn" onclick="zoomRegion('asia')">Asia</button>
-<button class="region-btn" onclick="zoomRegion('europe')">Europe</button>
-<button class="region-btn" onclick="zoomRegion('americas')">Americas</button>
-<button class="region-btn" onclick="zoomRegion('latam')">Latin America</button>
-<button class="region-btn" onclick="zoomRegion('brazil')">Brazil</button>
-<button class="region-btn" onclick="zoomRegion('oceania')">Oceania</button>
+<button class="region-btn" onclick="zoomRegion('world')" data-i18n="region.global">Global</button>
+<button class="region-btn" onclick="zoomRegion('africa')" data-i18n="region.africa">Africa</button>
+<button class="region-btn" onclick="zoomRegion('asia')" data-i18n="region.asia">Asia</button>
+<button class="region-btn" onclick="zoomRegion('europe')" data-i18n="region.europe">Europe</button>
+<button class="region-btn" onclick="zoomRegion('americas')" data-i18n="region.americas">Americas</button>
+<button class="region-btn" onclick="zoomRegion('latam')" data-i18n="region.latam">Latin America</button>
+<button class="region-btn" onclick="zoomRegion('brazil')" data-i18n="region.brazil">Brazil</button>
+<button class="region-btn" onclick="zoomRegion('oceania')" data-i18n="region.oceania">Oceania</button>
 </div>
 </div>
 <div class="panel">
-<div class="panel-header"><span class="panel-title">Global Overview</span><span class="panel-badge" id="data-year">2024</span></div>
+<div class="panel-header"><span class="panel-title" data-i18n="sidebar.overview">Global Overview</span><span class="panel-badge" id="data-year">2025</span></div>
 <div class="stats-grid">
-<div class="stat-card"><div class="stat-number" id="stat-victims">49.6M</div><div class="stat-label">Modern Slavery Victims</div><div class="stat-change">+10M since 2016</div></div>
-<div class="stat-card orange"><div class="stat-number" id="stat-children">12.3M</div><div class="stat-label">Children Exploited</div><div class="stat-change">1 in 10 worldwide</div></div>
-<div class="stat-card yellow"><div class="stat-number" id="stat-countries">186</div><div class="stat-label">Countries Affected</div><div class="stat-change">All regions</div></div>
-<div class="stat-card green"><div class="stat-number" id="stat-prosecutions">11,369</div><div class="stat-label">Prosecutions (2023)</div><div class="stat-change" id="stat-pros-change">+8.2% YoY</div></div>
+<div class="stat-card"><div class="stat-number" id="stat-victims">49.6M</div><div class="stat-label" data-i18n="stat.victims">Modern Slavery Victims</div><div class="stat-change" data-i18n="stat.victimsSince">+10M since 2016</div></div>
+<div class="stat-card orange"><div class="stat-number" id="stat-children">12.3M</div><div class="stat-label" data-i18n="stat.children">Children Exploited</div><div class="stat-change" data-i18n="stat.childrenRate">1 in 10 worldwide</div></div>
+<div class="stat-card yellow"><div class="stat-number" id="stat-countries">186</div><div class="stat-label" data-i18n="stat.countries">Countries Affected</div><div class="stat-change" data-i18n="stat.allRegions">All regions</div></div>
+<div class="stat-card green"><div class="stat-number" id="stat-prosecutions">12,247</div><div class="stat-label" data-i18n="stat.prosecutions">Prosecutions (2024)</div><div class="stat-change" id="stat-pros-change">+7.7% YoY</div></div>
 </div>
 </div>
 <div class="panel" id="latam-panel">
-<div class="panel-header"><span class="panel-title">Latin America Focus</span><span class="panel-badge">LATAM</span></div>
+<div class="panel-header"><span class="panel-title" data-i18n="sidebar.latam">Latin America Focus</span><span class="panel-badge">LATAM</span></div>
 <div class="stats-grid">
-<div class="stat-card"><div class="stat-number" style="font-size:1.2rem">1.5M+</div><div class="stat-label">Victims in Region</div><div class="stat-change">ILO/Walk Free</div></div>
-<div class="stat-card orange"><div class="stat-number" style="font-size:1.2rem">8.2M</div><div class="stat-label">Children in Labor</div><div class="stat-change">ILO Americas</div></div>
-<div class="stat-card yellow"><div class="stat-number" style="font-size:1.2rem">7.7M</div><div class="stat-label">Venezuelans Displaced</div><div class="stat-change">R4V/UNHCR</div></div>
-<div class="stat-card green"><div class="stat-number" style="font-size:1.2rem">2,575</div><div class="stat-label">Rescued Brazil</div><div class="stat-change">SmartLab 2023</div></div>
+<div class="stat-card"><div class="stat-number" style="font-size:1.2rem">1.5M+</div><div class="stat-label" data-i18n="latam.victims">Victims in Region</div><div class="stat-change">ILO/Walk Free</div></div>
+<div class="stat-card orange"><div class="stat-number" style="font-size:1.2rem">8.2M</div><div class="stat-label" data-i18n="latam.childLabor">Children in Labor</div><div class="stat-change">ILO Americas</div></div>
+<div class="stat-card yellow"><div class="stat-number" style="font-size:1.2rem">7.7M</div><div class="stat-label" data-i18n="latam.displaced">Venezuelans Displaced</div><div class="stat-change">R4V/UNHCR</div></div>
+<div class="stat-card green"><div class="stat-number" style="font-size:1.2rem">2,575</div><div class="stat-label" data-i18n="latam.rescued">Rescued Brazil</div><div class="stat-change">SmartLab 2023</div></div>
 </div>
 </div>
 <div class="panel">
-<div class="panel-header"><span class="panel-title">Filters</span></div>
+<div class="panel-header"><span class="panel-title" data-i18n="sidebar.filters">Filters</span></div>
 <div class="filter-group">
-<div class="filter-label">Type of Trafficking</div>
+<div class="filter-label" data-i18n="filter.type">Type of Trafficking</div>
 <div class="filter-chips" id="filter-type" style="flex-wrap:wrap">
-<div class="chip active" data-val="all" onclick="applyFilter('type','all',this)">All Types</div>
-<div class="chip" data-val="sexual" onclick="applyFilter('type','sexual',this)">Sexual</div>
-<div class="chip" data-val="labor" onclick="applyFilter('type','labor',this)">Forced Labor</div>
-<div class="chip" data-val="domestic" onclick="applyFilter('type','domestic',this)">Domestic</div>
-<div class="chip" data-val="child" onclick="applyFilter('type','child',this)">Child</div>
-<div class="chip" data-val="organ" onclick="applyFilter('type','organ',this)">Organ</div>
-<div class="chip" data-val="marriage" onclick="applyFilter('type','marriage',this)">Forced Marriage</div>
-<div class="chip" data-val="begging" onclick="applyFilter('type','begging',this)">Begging</div>
-<div class="chip" data-val="soldiers" onclick="applyFilter('type','soldiers',this)">Child Soldiers</div>
+<div class="chip active" data-val="all" onclick="applyFilter('type','all',this)" data-i18n="filter.allTypes">All Types</div>
+<div class="chip" data-val="sexual" onclick="applyFilter('type','sexual',this)" data-i18n="filter.sexual">Sexual</div>
+<div class="chip" data-val="labor" onclick="applyFilter('type','labor',this)" data-i18n="filter.labor">Forced Labor</div>
+<div class="chip" data-val="domestic" onclick="applyFilter('type','domestic',this)" data-i18n="filter.domestic">Domestic</div>
+<div class="chip" data-val="child" onclick="applyFilter('type','child',this)" data-i18n="filter.child">Child</div>
+<div class="chip" data-val="organ" onclick="applyFilter('type','organ',this)" data-i18n="filter.organ">Organ</div>
+<div class="chip" data-val="marriage" onclick="applyFilter('type','marriage',this)" data-i18n="filter.marriage">Forced Marriage</div>
+<div class="chip" data-val="begging" onclick="applyFilter('type','begging',this)" data-i18n="filter.begging">Begging</div>
+<div class="chip" data-val="soldiers" onclick="applyFilter('type','soldiers',this)" data-i18n="filter.soldiers">Child Soldiers</div>
 </div>
 </div>
 <div class="filter-group">
-<div class="filter-label">Severity</div>
+<div class="filter-label" data-i18n="filter.severity">Severity</div>
 <div class="filter-chips" id="filter-severity">
-<div class="chip active" data-val="all" onclick="applyFilter('severity','all',this)">All</div>
-<div class="chip" data-val="critical" onclick="applyFilter('severity','critical',this)">Critical (9+)</div>
-<div class="chip" data-val="high" onclick="applyFilter('severity','high',this)">High (7-9)</div>
-<div class="chip" data-val="medium" onclick="applyFilter('severity','medium',this)">Medium (4-7)</div>
-<div class="chip" data-val="low" onclick="applyFilter('severity','low',this)">Low (&lt;4)</div>
+<div class="chip active" data-val="all" onclick="applyFilter('severity','all',this)" data-i18n="filter.all">All</div>
+<div class="chip" data-val="critical" onclick="applyFilter('severity','critical',this)" data-i18n="filter.critical">Critical (9+)</div>
+<div class="chip" data-val="high" onclick="applyFilter('severity','high',this)" data-i18n="filter.high">High (7-9)</div>
+<div class="chip" data-val="medium" onclick="applyFilter('severity','medium',this)" data-i18n="filter.medium">Medium (4-7)</div>
+<div class="chip" data-val="low" onclick="applyFilter('severity','low',this)" data-i18n="filter.low">Low (&lt;4)</div>
 </div>
 </div>
 <div class="timeline-container">
-<div class="filter-label">Timeline</div>
-<input type="range" class="timeline-slider" id="timeline" min="2018" max="2025" value="2024" step="1" oninput="updateTimeline(this.value)">
-<div class="timeline-year"><span>2018</span><span id="current-year">2024</span><span>2025</span></div>
+<div class="filter-label" data-i18n="filter.timeline">Timeline</div>
+<input type="range" class="timeline-slider" id="timeline" min="2018" max="2025" value="2025" step="1" oninput="updateTimeline(this.value)">
+<div class="timeline-year"><span>2018</span><span id="current-year">2025</span><span>2025</span></div>
 </div>
+<div class="trend-chart-panel"><canvas id="trend-canvas" height="160"></canvas></div>
 </div>
 <div class="panel">
-<div class="panel-header"><span class="panel-title">Most Affected Countries</span><span class="panel-badge" id="rank-badge">TOP 15</span></div>
+<div class="panel-header"><span class="panel-title" data-i18n="sidebar.ranking">Most Affected Countries</span><span class="panel-badge" id="rank-badge">TOP 15</span></div>
 <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap">
-<button class="chip active" onclick="filterRanking('all',this)">Global</button>
-<button class="chip" onclick="filterRanking('Americas',this)">Americas</button>
-<button class="chip" onclick="filterRanking('Africa',this)">Africa</button>
-<button class="chip" onclick="filterRanking('Asia',this)">Asia</button>
-<button class="chip" onclick="filterRanking('Europe',this)">Europe</button>
+<button class="chip active" onclick="filterRanking('all',this)" data-i18n="sidebar.global">Global</button>
+<button class="chip" onclick="filterRanking('Americas',this)" data-i18n="region.americas">Americas</button>
+<button class="chip" onclick="filterRanking('Africa',this)" data-i18n="region.africa">Africa</button>
+<button class="chip" onclick="filterRanking('Asia',this)" data-i18n="region.asia">Asia</button>
+<button class="chip" onclick="filterRanking('Europe',this)" data-i18n="region.europe">Europe</button>
 </div>
 <div class="rank-list" id="rank-list"></div>
 </div>
 </div>
-<div id="detail-panel" class="panel">
+<div id="detail-panel" class="panel" role="complementary" aria-label="Country details">
 <button class="detail-close" onclick="closeDetail()">&times;</button>
 <div id="detail-content"></div>
 </div>
 <div id="legend">
-<span class="legend-title">Severity</span>
+<span class="legend-title" data-i18n="legend.severity">Severity</span>
 <div class="legend-scale">
 <div class="legend-block" style="background:#1a3a2a"></div>
 <div class="legend-block" style="background:#2ec4b6"></div>
@@ -285,22 +330,577 @@ html,body{height:100%;overflow:hidden;background:var(--bg-deep);color:var(--text
 <div class="legend-block" style="background:#d62828"></div>
 <div class="legend-block" style="background:#e63946"></div>
 </div>
-<div class="legend-labels"><span>Low</span><span>Medium</span><span>High</span><span>Critical</span></div>
+<div class="legend-labels"><span data-i18n="legend.low">Low</span><span data-i18n="legend.medium">Medium</span><span data-i18n="legend.high">High</span><span data-i18n="legend.critical">Critical</span></div>
 </div>
 <div id="ticker">
-<div class="ticker-label"><span class="ticker-dot"></span>LIVE FEED</div>
+<div class="ticker-label"><span class="ticker-dot"></span><span data-i18n="ticker.live">LIVE FEED</span></div>
 <div class="ticker-scroll"><div class="ticker-track" id="ticker-track"></div></div>
 </div>
 <div id="sources-modal" onclick="if(event.target===this)closeSources()">
 <div class="modal-content" style="position:relative">
 <button class="modal-close" onclick="closeSources()">&times;</button>
-<h2>Data Sources</h2>
-<p>This platform aggregates data from 100+ verified public sources across international organizations, governments, NGOs, and research institutions.</p>
+<h2 data-i18n="sources.title">Data Sources</h2>
+<p data-i18n="sources.desc">This platform aggregates data from 100+ verified public sources across international organizations, governments, NGOs, and research institutions.</p>
 <div id="sources-list"></div>
 </div>
 </div>
+<div class="compare-panel" id="compare-panel">
+<button class="detail-close" onclick="toggleCompare()">&times;</button>
+<h2 style="font-family:var(--font-display);margin-bottom:16px" data-i18n="nav.compare">Compare Countries</h2>
+<div style="display:flex;gap:8px;margin-bottom:16px">
+<select id="compare-a" class="chip" style="background:var(--glass);border:1px solid var(--glass-border);color:var(--text-primary);padding:8px;border-radius:8px;width:200px" onchange="updateCompare()"></select>
+<select id="compare-b" class="chip" style="background:var(--glass);border:1px solid var(--glass-border);color:var(--text-primary);padding:8px;border-radius:8px;width:200px" onchange="updateCompare()"></select>
+</div>
+<div class="compare-grid" id="compare-grid"></div>
+</div>
+<div id="sr-announcer" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js" defer></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// ═══ INTERNATIONALIZATION ═══
+let currentLang = localStorage.getItem('sentinel_lang') || 'en';
+
+const translations = {
+en: {
+  // Loading
+  'loading.title': 'SENTINEL',
+  'loading.subtitle': 'Global Trafficking Monitor',
+  'loading.init': 'Initializing geospatial engine...',
+  // Top bar
+  'nav.routes': 'Routes',
+  'nav.hotspots': 'Hotspots',
+  'nav.choropleth': 'Choropleth',
+  'nav.panel': 'Panel',
+  'nav.sources': 'Sources',
+  'nav.export': 'Export',
+  'nav.compare': 'Compare',
+  'nav.present': 'Present',
+  'nav.help': 'Help',
+  'nav.heatmap': 'Heatmap',
+  'nav.globe': '3D Globe',
+  'nav.refresh': 'Refresh',
+  // Sidebar
+  'sidebar.search': 'Search countries...',
+  'sidebar.global': 'Global',
+  'sidebar.overview': 'Global Overview',
+  'sidebar.latam': 'Latin America Focus',
+  'sidebar.filters': 'Filters',
+  'sidebar.ranking': 'Most Affected Countries',
+  'sidebar.rankBadge': 'TOP',
+  // Stats
+  'stat.victims': 'Modern Slavery Victims',
+  'stat.children': 'Children Exploited',
+  'stat.countries': 'Countries Affected',
+  'stat.prosecutions': 'Prosecutions',
+  'stat.allRegions': 'All regions',
+  'stat.victimsSince': '+10M since 2016',
+  'stat.childrenRate': '1 in 10 worldwide',
+  // LATAM stats
+  'latam.victims': 'Victims in Region',
+  'latam.childLabor': 'Children in Labor',
+  'latam.displaced': 'Venezuelans Displaced',
+  'latam.rescued': 'Rescued Brazil',
+  // Filters
+  'filter.type': 'Type of Trafficking',
+  'filter.severity': 'Severity',
+  'filter.timeline': 'Timeline',
+  'filter.all': 'All',
+  'filter.allTypes': 'All Types',
+  'filter.sexual': 'Sexual',
+  'filter.labor': 'Forced Labor',
+  'filter.domestic': 'Domestic',
+  'filter.child': 'Child',
+  'filter.organ': 'Organ',
+  'filter.marriage': 'Forced Marriage',
+  'filter.begging': 'Begging',
+  'filter.soldiers': 'Child Soldiers',
+  'filter.critical': 'Critical (9+)',
+  'filter.high': 'High (7-9)',
+  'filter.medium': 'Medium (4-7)',
+  'filter.low': 'Low (<4)',
+  // Detail panel
+  'detail.estVictims': 'Est. Victims',
+  'detail.childrenAffected': 'Children Affected',
+  'detail.prosecutions': 'Prosecutions',
+  'detail.slaveryIndex': 'Slavery Index',
+  'detail.severityScore': 'Severity Score',
+  'detail.riskIndicators': 'Risk Indicators',
+  'detail.intelligence': 'Country Intelligence',
+  'detail.breakdown': 'Detailed Breakdown',
+  'detail.localSources': 'Local Sources',
+  'detail.sources': 'Sources: Walk Free GSI, US TIP Report, UNODC, ILO, CTDC',
+  'detail.legalFramework': 'Legal Framework',
+  'detail.helpDirectory': 'Help & Report',
+  'detail.connectedRoutes': 'Connected Trafficking Routes',
+  'detail.recentReports': 'Recent Reports & News',
+  'detail.historicalContext': 'Historical Context',
+  'detail.intelSummary': 'Intelligence Summary',
+  'detail.clearRoutes': 'Clear Routes',
+  // Risk factors
+  'risk.conflict': 'Armed Conflict',
+  'risk.poverty': 'Poverty Level',
+  'risk.governance': 'Governance Gap',
+  'risk.displacement': 'Displacement',
+  'risk.genderInequality': 'Gender Inequality',
+  // Legend
+  'legend.severity': 'Severity',
+  'legend.low': 'Low',
+  'legend.medium': 'Medium',
+  'legend.high': 'High',
+  'legend.critical': 'Critical',
+  // Ticker
+  'ticker.live': 'LIVE FEED',
+  // Sources modal
+  'sources.title': 'Data Sources',
+  'sources.desc': 'This platform aggregates data from 100+ verified public sources across international organizations, governments, NGOs, and research institutions.',
+  // Regions
+  'region.global': 'Global',
+  'region.africa': 'Africa',
+  'region.asia': 'Asia',
+  'region.europe': 'Europe',
+  'region.americas': 'Americas',
+  'region.latam': 'Latin America',
+  'region.brazil': 'Brazil',
+  'region.oceania': 'Oceania',
+  // Generic detail
+  'generic.info': 'Information',
+  'generic.noData': 'Detailed trafficking data for {country} is not yet available in our database. This country may still be affected by human trafficking. According to UNODC, trafficking in persons has been reported in virtually every country in the world.',
+  'generic.help': 'How to Help',
+  'generic.contribute': 'If you have data about trafficking in {country}, please contribute to open data initiatives like CTDC (Counter Trafficking Data Collaborative) or report to local authorities and UNODC.',
+  // Rank
+  'rank.victims': 'victims',
+  'rank.tier': 'Tier',
+  // Hotspot
+  'hotspot.severity': 'Severity',
+  'hotspot.clickDetails': 'Click for details & routes',
+  'hotspot.pop': 'Pop',
+  // Loading steps
+  'load.geo': 'Loading geospatial engine...',
+  'load.fetch': 'Fetching country boundaries...',
+  'load.processing': 'Processing {count} countries...',
+  'load.hotspots': 'Mapping {count} hotspots...',
+  'load.routes': 'Drawing {count} trafficking corridors...',
+  'load.sources': 'Connecting to {count}+ data sources...',
+  'load.feeds': 'Calibrating real-time feeds...',
+  'load.online': 'SENTINEL online.',
+  // Keyboard shortcuts
+  'help.title': 'Keyboard Shortcuts & Help',
+  'help.search': 'Focus search',
+  'help.close': 'Close panels',
+  'help.heatmap': 'Toggle heatmap',
+  'help.routes': 'Toggle routes',
+  'help.present': 'Presentation mode',
+  'help.navigate': 'Navigate list',
+  // Tutorial
+  'tutorial.map': 'Interactive map showing trafficking severity by country. Click any country for details.',
+  'tutorial.sidebar': 'Control panel with statistics, filters, and rankings.',
+  'tutorial.routes': 'Toggle trafficking route visualization.',
+  'tutorial.hotspots': 'Toggle hotspot markers for key trafficking cities.',
+  'tutorial.search': 'Search for any country by name.',
+  'tutorial.legend': 'Color legend showing severity levels.',
+},
+pt: {
+  'loading.title': 'SENTINEL',
+  'loading.subtitle': 'Monitor Global de Trafico',
+  'loading.init': 'Inicializando motor geoespacial...',
+  'nav.routes': 'Rotas',
+  'nav.hotspots': 'Hotspots',
+  'nav.choropleth': 'Coropleta',
+  'nav.panel': 'Painel',
+  'nav.sources': 'Fontes',
+  'nav.export': 'Exportar',
+  'nav.compare': 'Comparar',
+  'nav.present': 'Apresentar',
+  'nav.help': 'Ajuda',
+  'nav.heatmap': 'Mapa Calor',
+  'nav.globe': 'Globo 3D',
+  'nav.refresh': 'Atualizar',
+  'sidebar.search': 'Buscar paises...',
+  'sidebar.global': 'Global',
+  'sidebar.overview': 'Visao Global',
+  'sidebar.latam': 'Foco America Latina',
+  'sidebar.filters': 'Filtros',
+  'sidebar.ranking': 'Paises Mais Afetados',
+  'sidebar.rankBadge': 'TOP',
+  'stat.victims': 'Vitimas de Escravidao Moderna',
+  'stat.children': 'Criancas Exploradas',
+  'stat.countries': 'Paises Afetados',
+  'stat.prosecutions': 'Processos Judiciais',
+  'stat.allRegions': 'Todas as regioes',
+  'stat.victimsSince': '+10M desde 2016',
+  'stat.childrenRate': '1 em 10 no mundo',
+  'latam.victims': 'Vitimas na Regiao',
+  'latam.childLabor': 'Criancas em Trabalho',
+  'latam.displaced': 'Venezuelanos Deslocados',
+  'latam.rescued': 'Resgatados Brasil',
+  'filter.type': 'Tipo de Trafico',
+  'filter.severity': 'Severidade',
+  'filter.timeline': 'Linha do Tempo',
+  'filter.all': 'Todos',
+  'filter.allTypes': 'Todos os Tipos',
+  'filter.sexual': 'Sexual',
+  'filter.labor': 'Trabalho Forcado',
+  'filter.domestic': 'Domestico',
+  'filter.child': 'Infantil',
+  'filter.organ': 'Orgaos',
+  'filter.marriage': 'Casamento Forcado',
+  'filter.begging': 'Mendicancia',
+  'filter.soldiers': 'Criancas Soldados',
+  'filter.critical': 'Critico (9+)',
+  'filter.high': 'Alto (7-9)',
+  'filter.medium': 'Medio (4-7)',
+  'filter.low': 'Baixo (<4)',
+  'detail.estVictims': 'Vitimas Est.',
+  'detail.childrenAffected': 'Criancas Afetadas',
+  'detail.prosecutions': 'Processos',
+  'detail.slaveryIndex': 'Indice Escravidao',
+  'detail.severityScore': 'Score de Severidade',
+  'detail.riskIndicators': 'Indicadores de Risco',
+  'detail.intelligence': 'Inteligencia do Pais',
+  'detail.breakdown': 'Detalhamento',
+  'detail.localSources': 'Fontes Locais',
+  'detail.sources': 'Fontes: Walk Free GSI, US TIP Report, UNODC, OIT, CTDC',
+  'detail.legalFramework': 'Legislacao',
+  'detail.helpDirectory': 'Ajuda & Denuncia',
+  'detail.connectedRoutes': 'Rotas de Trafico Conectadas',
+  'detail.recentReports': 'Noticias Recentes',
+  'detail.historicalContext': 'Contexto Historico',
+  'detail.intelSummary': 'Resumo de Inteligencia',
+  'detail.clearRoutes': 'Limpar Rotas',
+  'risk.conflict': 'Conflito Armado',
+  'risk.poverty': 'Nivel de Pobreza',
+  'risk.governance': 'Lacuna de Governanca',
+  'risk.displacement': 'Deslocamento',
+  'risk.genderInequality': 'Desigualdade de Genero',
+  'legend.severity': 'Severidade',
+  'legend.low': 'Baixo',
+  'legend.medium': 'Medio',
+  'legend.high': 'Alto',
+  'legend.critical': 'Critico',
+  'ticker.live': 'AO VIVO',
+  'sources.title': 'Fontes de Dados',
+  'sources.desc': 'Esta plataforma agrega dados de 100+ fontes publicas verificadas de organizacoes internacionais, governos, ONGs e instituicoes de pesquisa.',
+  'region.global': 'Global',
+  'region.africa': 'Africa',
+  'region.asia': 'Asia',
+  'region.europe': 'Europa',
+  'region.americas': 'Americas',
+  'region.latam': 'America Latina',
+  'region.brazil': 'Brasil',
+  'region.oceania': 'Oceania',
+  'generic.info': 'Informacao',
+  'generic.noData': 'Dados detalhados de trafico para {country} ainda nao estao disponiveis em nosso banco de dados. Este pais pode ainda ser afetado pelo trafico de pessoas.',
+  'generic.help': 'Como Ajudar',
+  'generic.contribute': 'Se voce tem dados sobre trafico em {country}, contribua para iniciativas de dados abertos como CTDC ou denuncie as autoridades locais e UNODC.',
+  'rank.victims': 'vitimas',
+  'rank.tier': 'Nivel',
+  'hotspot.severity': 'Severidade',
+  'hotspot.clickDetails': 'Clique para detalhes e rotas',
+  'hotspot.pop': 'Pop',
+  'load.geo': 'Carregando motor geoespacial...',
+  'load.fetch': 'Buscando fronteiras dos paises...',
+  'load.processing': 'Processando {count} paises...',
+  'load.hotspots': 'Mapeando {count} hotspots...',
+  'load.routes': 'Desenhando {count} corredores de trafico...',
+  'load.sources': 'Conectando a {count}+ fontes de dados...',
+  'load.feeds': 'Calibrando feeds em tempo real...',
+  'load.online': 'SENTINEL online.',
+  'help.title': 'Atalhos de Teclado & Ajuda',
+  'help.search': 'Focar busca',
+  'help.close': 'Fechar paineis',
+  'help.heatmap': 'Alternar mapa de calor',
+  'help.routes': 'Alternar rotas',
+  'help.present': 'Modo apresentacao',
+  'help.navigate': 'Navegar lista',
+  'tutorial.map': 'Mapa interativo mostrando severidade do trafico por pais. Clique em qualquer pais para detalhes.',
+  'tutorial.sidebar': 'Painel de controle com estatisticas, filtros e rankings.',
+  'tutorial.routes': 'Alternar visualizacao de rotas de trafico.',
+  'tutorial.hotspots': 'Alternar marcadores de hotspots de cidades-chave.',
+  'tutorial.search': 'Busque qualquer pais pelo nome.',
+  'tutorial.legend': 'Legenda de cores mostrando niveis de severidade.',
+},
+es: {
+  'loading.title': 'SENTINEL',
+  'loading.subtitle': 'Monitor Global de Trata',
+  'loading.init': 'Inicializando motor geoespacial...',
+  'nav.routes': 'Rutas',
+  'nav.hotspots': 'Hotspots',
+  'nav.choropleth': 'Coropleta',
+  'nav.panel': 'Panel',
+  'nav.sources': 'Fuentes',
+  'nav.export': 'Exportar',
+  'nav.compare': 'Comparar',
+  'nav.present': 'Presentar',
+  'nav.help': 'Ayuda',
+  'nav.heatmap': 'Mapa Calor',
+  'nav.globe': 'Globo 3D',
+  'nav.refresh': 'Actualizar',
+  'sidebar.search': 'Buscar paises...',
+  'sidebar.global': 'Global',
+  'sidebar.overview': 'Vision Global',
+  'sidebar.latam': 'Enfoque America Latina',
+  'sidebar.filters': 'Filtros',
+  'sidebar.ranking': 'Paises Mas Afectados',
+  'sidebar.rankBadge': 'TOP',
+  'stat.victims': 'Victimas de Esclavitud Moderna',
+  'stat.children': 'Ninos Explotados',
+  'stat.countries': 'Paises Afectados',
+  'stat.prosecutions': 'Procesamientos',
+  'stat.allRegions': 'Todas las regiones',
+  'stat.victimsSince': '+10M desde 2016',
+  'stat.childrenRate': '1 de cada 10 en el mundo',
+  'latam.victims': 'Victimas en la Region',
+  'latam.childLabor': 'Ninos en Trabajo',
+  'latam.displaced': 'Venezolanos Desplazados',
+  'latam.rescued': 'Rescatados Brasil',
+  'filter.type': 'Tipo de Trata',
+  'filter.severity': 'Severidad',
+  'filter.timeline': 'Linea de Tiempo',
+  'filter.all': 'Todos',
+  'filter.allTypes': 'Todos los Tipos',
+  'filter.sexual': 'Sexual',
+  'filter.labor': 'Trabajo Forzado',
+  'filter.domestic': 'Domestico',
+  'filter.child': 'Infantil',
+  'filter.organ': 'Organos',
+  'filter.marriage': 'Matrimonio Forzado',
+  'filter.begging': 'Mendicidad',
+  'filter.soldiers': 'Ninos Soldados',
+  'filter.critical': 'Critico (9+)',
+  'filter.high': 'Alto (7-9)',
+  'filter.medium': 'Medio (4-7)',
+  'filter.low': 'Bajo (<4)',
+  'detail.estVictims': 'Victimas Est.',
+  'detail.childrenAffected': 'Ninos Afectados',
+  'detail.prosecutions': 'Procesamientos',
+  'detail.slaveryIndex': 'Indice Esclavitud',
+  'detail.severityScore': 'Puntaje de Severidad',
+  'detail.riskIndicators': 'Indicadores de Riesgo',
+  'detail.intelligence': 'Inteligencia del Pais',
+  'detail.breakdown': 'Desglose Detallado',
+  'detail.localSources': 'Fuentes Locales',
+  'detail.sources': 'Fuentes: Walk Free GSI, US TIP Report, UNODC, OIT, CTDC',
+  'detail.legalFramework': 'Marco Legal',
+  'detail.helpDirectory': 'Ayuda & Denuncia',
+  'detail.connectedRoutes': 'Rutas de Trata Conectadas',
+  'detail.recentReports': 'Informes Recientes',
+  'detail.historicalContext': 'Contexto Historico',
+  'detail.intelSummary': 'Resumen de Inteligencia',
+  'detail.clearRoutes': 'Limpiar Rutas',
+  'risk.conflict': 'Conflicto Armado',
+  'risk.poverty': 'Nivel de Pobreza',
+  'risk.governance': 'Brecha de Gobernanza',
+  'risk.displacement': 'Desplazamiento',
+  'risk.genderInequality': 'Desigualdad de Genero',
+  'legend.severity': 'Severidad',
+  'legend.low': 'Bajo',
+  'legend.medium': 'Medio',
+  'legend.high': 'Alto',
+  'legend.critical': 'Critico',
+  'ticker.live': 'EN VIVO',
+  'sources.title': 'Fuentes de Datos',
+  'sources.desc': 'Esta plataforma agrega datos de 100+ fuentes publicas verificadas de organizaciones internacionales, gobiernos, ONGs e instituciones de investigacion.',
+  'region.global': 'Global',
+  'region.africa': 'Africa',
+  'region.asia': 'Asia',
+  'region.europe': 'Europa',
+  'region.americas': 'Americas',
+  'region.latam': 'America Latina',
+  'region.brazil': 'Brasil',
+  'region.oceania': 'Oceania',
+  'generic.info': 'Informacion',
+  'generic.noData': 'Los datos detallados de trata para {country} aun no estan disponibles. Este pais puede estar afectado por la trata de personas.',
+  'generic.help': 'Como Ayudar',
+  'generic.contribute': 'Si tiene datos sobre trata en {country}, contribuya a iniciativas como CTDC o denuncie a las autoridades locales.',
+  'rank.victims': 'victimas',
+  'rank.tier': 'Nivel',
+  'hotspot.severity': 'Severidad',
+  'hotspot.clickDetails': 'Clic para detalles y rutas',
+  'hotspot.pop': 'Pob',
+  'load.geo': 'Cargando motor geoespacial...',
+  'load.fetch': 'Obteniendo fronteras de paises...',
+  'load.processing': 'Procesando {count} paises...',
+  'load.hotspots': 'Mapeando {count} hotspots...',
+  'load.routes': 'Dibujando {count} corredores de trata...',
+  'load.sources': 'Conectando a {count}+ fuentes...',
+  'load.feeds': 'Calibrando feeds en tiempo real...',
+  'load.online': 'SENTINEL en linea.',
+  'help.title': 'Atajos de Teclado & Ayuda',
+  'help.search': 'Enfocar busqueda',
+  'help.close': 'Cerrar paneles',
+  'help.heatmap': 'Alternar mapa de calor',
+  'help.routes': 'Alternar rutas',
+  'help.present': 'Modo presentacion',
+  'help.navigate': 'Navegar lista',
+  'tutorial.map': 'Mapa interactivo mostrando severidad de trata por pais. Haga clic en cualquier pais.',
+  'tutorial.sidebar': 'Panel de control con estadisticas, filtros y rankings.',
+  'tutorial.routes': 'Alternar visualizacion de rutas de trata.',
+  'tutorial.hotspots': 'Alternar marcadores de hotspots.',
+  'tutorial.search': 'Busque cualquier pais por nombre.',
+  'tutorial.legend': 'Leyenda de colores mostrando niveles de severidad.',
+},
+fr: {
+  'loading.title': 'SENTINEL',
+  'loading.subtitle': 'Moniteur Mondial de la Traite',
+  'loading.init': 'Initialisation du moteur geospatial...',
+  'nav.routes': 'Routes',
+  'nav.hotspots': 'Points Chauds',
+  'nav.choropleth': 'Choroplethe',
+  'nav.panel': 'Panneau',
+  'nav.sources': 'Sources',
+  'nav.export': 'Exporter',
+  'nav.compare': 'Comparer',
+  'nav.present': 'Presenter',
+  'nav.help': 'Aide',
+  'nav.heatmap': 'Carte Chaleur',
+  'nav.globe': 'Globe 3D',
+  'nav.refresh': 'Actualiser',
+  'sidebar.search': 'Rechercher des pays...',
+  'sidebar.global': 'Mondial',
+  'sidebar.overview': 'Vue Globale',
+  'sidebar.latam': 'Focus Amerique Latine',
+  'sidebar.filters': 'Filtres',
+  'sidebar.ranking': 'Pays les Plus Touches',
+  'sidebar.rankBadge': 'TOP',
+  'stat.victims': 'Victimes d\'Esclavage Moderne',
+  'stat.children': 'Enfants Exploites',
+  'stat.countries': 'Pays Touches',
+  'stat.prosecutions': 'Poursuites',
+  'stat.allRegions': 'Toutes les regions',
+  'stat.victimsSince': '+10M depuis 2016',
+  'stat.childrenRate': '1 sur 10 dans le monde',
+  'latam.victims': 'Victimes dans la Region',
+  'latam.childLabor': 'Enfants au Travail',
+  'latam.displaced': 'Venezueliens Deplaces',
+  'latam.rescued': 'Sauves au Bresil',
+  'filter.type': 'Type de Traite',
+  'filter.severity': 'Severite',
+  'filter.timeline': 'Chronologie',
+  'filter.all': 'Tous',
+  'filter.allTypes': 'Tous les Types',
+  'filter.sexual': 'Sexuelle',
+  'filter.labor': 'Travail Force',
+  'filter.domestic': 'Domestique',
+  'filter.child': 'Enfant',
+  'filter.organ': 'Organes',
+  'filter.marriage': 'Mariage Force',
+  'filter.begging': 'Mendicite',
+  'filter.soldiers': 'Enfants Soldats',
+  'filter.critical': 'Critique (9+)',
+  'filter.high': 'Eleve (7-9)',
+  'filter.medium': 'Moyen (4-7)',
+  'filter.low': 'Faible (<4)',
+  'detail.estVictims': 'Victimes Est.',
+  'detail.childrenAffected': 'Enfants Touches',
+  'detail.prosecutions': 'Poursuites',
+  'detail.slaveryIndex': 'Indice Esclavage',
+  'detail.severityScore': 'Score de Severite',
+  'detail.riskIndicators': 'Indicateurs de Risque',
+  'detail.intelligence': 'Renseignement Pays',
+  'detail.breakdown': 'Detail',
+  'detail.localSources': 'Sources Locales',
+  'detail.sources': 'Sources: Walk Free GSI, US TIP Report, UNODC, OIT, CTDC',
+  'detail.legalFramework': 'Cadre Juridique',
+  'detail.helpDirectory': 'Aide & Signalement',
+  'detail.connectedRoutes': 'Routes de Traite Connectees',
+  'detail.recentReports': 'Rapports Recents',
+  'detail.historicalContext': 'Contexte Historique',
+  'detail.intelSummary': 'Resume du Renseignement',
+  'detail.clearRoutes': 'Effacer Routes',
+  'risk.conflict': 'Conflit Arme',
+  'risk.poverty': 'Niveau de Pauvrete',
+  'risk.governance': 'Lacune de Gouvernance',
+  'risk.displacement': 'Deplacement',
+  'risk.genderInequality': 'Inegalite de Genre',
+  'legend.severity': 'Severite',
+  'legend.low': 'Faible',
+  'legend.medium': 'Moyen',
+  'legend.high': 'Eleve',
+  'legend.critical': 'Critique',
+  'ticker.live': 'EN DIRECT',
+  'sources.title': 'Sources de Donnees',
+  'sources.desc': 'Cette plateforme agrege des donnees de 100+ sources publiques verifiees d\'organisations internationales, gouvernements, ONG et institutions de recherche.',
+  'region.global': 'Mondial',
+  'region.africa': 'Afrique',
+  'region.asia': 'Asie',
+  'region.europe': 'Europe',
+  'region.americas': 'Ameriques',
+  'region.latam': 'Amerique Latine',
+  'region.brazil': 'Bresil',
+  'region.oceania': 'Oceanie',
+  'generic.info': 'Information',
+  'generic.noData': 'Les donnees detaillees sur la traite pour {country} ne sont pas encore disponibles. Ce pays peut etre touche par la traite des personnes.',
+  'generic.help': 'Comment Aider',
+  'generic.contribute': 'Si vous avez des donnees sur la traite au/en {country}, contribuez aux initiatives comme le CTDC ou signalez aux autorites locales.',
+  'rank.victims': 'victimes',
+  'rank.tier': 'Niveau',
+  'hotspot.severity': 'Severite',
+  'hotspot.clickDetails': 'Cliquez pour details et routes',
+  'hotspot.pop': 'Pop',
+  'load.geo': 'Chargement du moteur geospatial...',
+  'load.fetch': 'Recuperation des frontieres...',
+  'load.processing': 'Traitement de {count} pays...',
+  'load.hotspots': 'Cartographie de {count} points chauds...',
+  'load.routes': 'Dessin de {count} corridors de traite...',
+  'load.sources': 'Connexion a {count}+ sources...',
+  'load.feeds': 'Calibrage des flux en temps reel...',
+  'load.online': 'SENTINEL en ligne.',
+  'help.title': 'Raccourcis Clavier & Aide',
+  'help.search': 'Focus recherche',
+  'help.close': 'Fermer panneaux',
+  'help.heatmap': 'Basculer carte de chaleur',
+  'help.routes': 'Basculer routes',
+  'help.present': 'Mode presentation',
+  'help.navigate': 'Naviguer dans la liste',
+  'tutorial.map': 'Carte interactive montrant la severite de la traite par pays. Cliquez sur n\'importe quel pays.',
+  'tutorial.sidebar': 'Panneau de controle avec statistiques, filtres et classements.',
+  'tutorial.routes': 'Basculer la visualisation des routes de traite.',
+  'tutorial.hotspots': 'Basculer les marqueurs de points chauds.',
+  'tutorial.search': 'Recherchez n\'importe quel pays par nom.',
+  'tutorial.legend': 'Legende des couleurs montrant les niveaux de severite.',
+}
+};
+
+function t(key, params) {
+  let str = (translations[currentLang] && translations[currentLang][key]) || translations.en[key] || key;
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      str = str.replace('{' + k + '}', v);
+    }
+  }
+  return str;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  try { localStorage.setItem('sentinel_lang', lang); } catch(e) {}
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim().toLowerCase() === lang));
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : lang;
+  updateAllTranslations();
+}
+
+function updateAllTranslations() {
+  // Update all elements with data-i18n attribute
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  // Rebuild dynamic content
+  buildRankList();
+  buildTicker();
+  // Update legend
+  const legendLabels = document.querySelector('.legend-labels');
+  if (legendLabels) legendLabels.innerHTML = '<span>'+t('legend.low')+'</span><span>'+t('legend.medium')+'</span><span>'+t('legend.high')+'</span><span>'+t('legend.critical')+'</span>';
+  // Update ticker label
+  const tickerLabel = document.querySelector('.ticker-label');
+  if (tickerLabel) tickerLabel.innerHTML = '<span class="ticker-dot"></span>' + t('ticker.live');
+}
+
 // SENTINEL Data Engine - 130+ Countries
 const C = {
 AFG:{n:"Afghanistan",f:"\u{1F1E6}\u{1F1EB}",r:"Asia",t:"3",s:9.2,v:1320000,ch:480000,p:12,si:82.4,la:33.93,ln:67.71,rf:{c:5,po:5,g:4,d:5,gi:5},ty:["labor","sexual","child","marriage"],no:"Afghanistan remains one of the most affected countries globally. Decades of conflict, Taliban governance, and extreme poverty create conditions for widespread trafficking. Bacha bazi (sexual exploitation of boys) persists despite criminalization. Women and girls sold into forced marriages. IDP camps are recruitment zones. US TIP 2024: Tier 3 — government does not meet minimum standards."},
@@ -317,10 +917,10 @@ BEL:{n:"Belgium",f:"\u{1F1E7}\u{1F1EA}",r:"Europe",t:"1",s:2.4,v:18000,ch:2800,p
 BLZ:{n:"Belize",f:"\u{1F1E7}\u{1F1FF}",r:"Americas",t:"2W",s:5.0,v:4200,ch:1500,p:4,si:27.8,la:17.19,ln:-88.5,rf:{c:1,po:3,g:4,d:2,gi:3},ty:["sexual","labor","child","begging"],no:"Central American migrants transit through Belize. Children subjected to sex trafficking near border areas and tourist destinations. Forced labor in agriculture and fishing."},
 BEN:{n:"Benin",f:"\u{1F1E7}\u{1F1EF}",r:"Africa",t:"2",s:5.8,v:42000,ch:18000,p:15,si:34.2,la:9.31,ln:2.32,rf:{c:1,po:4,g:3,d:2,gi:4},ty:["child","labor","domestic","begging"],no:"Benin is a major source for child trafficking in West Africa. Vidomegon system (child placement) leads to exploitation. Children trafficked to Nigeria, Gabon, Cote d'Ivoire for domestic work, agriculture, and market vending."},
 BOL:{n:"Bolivia",f:"\u{1F1E7}\u{1F1F4}",r:"Americas",t:"2W",s:5.8,v:58000,ch:22000,p:18,si:34.5,la:-16.29,ln:-63.59,rf:{c:1,po:4,g:4,d:2,gi:4},ty:["labor","sexual","child","marriage"],no:"Bolivia is a source country for forced labor and sexual exploitation. Indigenous women and children are disproportionately affected. Mining and agriculture exploit child labor. Internal trafficking from rural highlands to cities (La Paz, Santa Cruz, Cochabamba). Bolivian workers trafficked to Argentina and Brazil for garment and agricultural work."},
-BRA:{n:"Brazil",f:"\u{1F1E7}\u{1F1F7}",r:"Americas",t:"2",s:5.4,v:369000,ch:102000,p:312,si:30.8,la:-14.24,ln:-51.93,rf:{c:1,po:4,g:3,d:2,gi:3},ty:["labor","sexual","child","domestic"],no:"Brazil is a source, transit, and destination country. Disque 100 received 4,941 trafficking reports (2023). SmartLab/MPT recorded 2,575 workers rescued from slave-like conditions. IBGE/PNAD estimates 1.8M children in child labor. Major corridors run from northern states (Para, Maranhao, Amazonas) to Sao Paulo and Rio de Janeiro. Triple Border (Foz do Iguacu) is a critical transit zone. SaferNet processed 71,867 online child exploitation reports (+82% since 2020). Federal Police conducted 124 anti-trafficking operations in 2023.",ex:{disque100Reports:4941,slaveRescues:2575,childLaborPNAD:1800000,safernetReports:71867,federalPoliceOps:124,internalRoutes:"North to Southeast (SP/RJ)",tripleBorder:"Foz do Iguacu (BR/PY/AR)",sr:["Disque 100","SmartLab/MPT","IBGE PNAD","SaferNet Brazil","Federal Police","CNJ","CONANDA"]}},
+BRA:{n:"Brazil",f:"\u{1F1E7}\u{1F1F7}",r:"Americas",t:"2W",s:5.8,v:369000,ch:102000,p:312,si:30.8,la:-14.24,ln:-51.93,rf:{c:1,po:4,g:3,d:2,gi:3},ty:["labor","sexual","child","domestic"],no:"US TIP 2025: DOWNGRADED to Tier 2 Watch List. Brazil is a source, transit, and destination country. Disque 100 received 4,941 trafficking reports (2023). SmartLab/MPT recorded 2,575 workers rescued from slave-like conditions. IBGE/PNAD estimates 1.8M children in child labor. Major corridors run from northern states (Para, Maranhao, Amazonas) to Sao Paulo and Rio de Janeiro. Triple Border (Foz do Iguacu) is a critical transit zone. SaferNet processed 71,867 online child exploitation reports (+82% since 2020). Federal Police conducted 124 anti-trafficking operations in 2023.",ex:{disque100Reports:4941,slaveRescues:2575,childLaborPNAD:1800000,safernetReports:71867,federalPoliceOps:124,internalRoutes:"North to Southeast (SP/RJ)",tripleBorder:"Foz do Iguacu (BR/PY/AR)",sr:["Disque 100","SmartLab/MPT","IBGE PNAD","SaferNet Brazil","Federal Police","CNJ","CONANDA"]}},
 BGR:{n:"Bulgaria",f:"\u{1F1E7}\u{1F1EC}",r:"Europe",t:"2",s:4.5,v:28000,ch:4800,p:82,si:22.8,la:42.73,ln:25.49,rf:{c:1,po:3,g:2,d:1,gi:2},ty:["sexual","labor","begging"],no:"Bulgaria is a major source country within the EU. Women trafficked to Western Europe for sexual exploitation. Roma communities disproportionately affected. Germany, France, Netherlands are primary destinations."},
 BFA:{n:"Burkina Faso",f:"\u{1F1E7}\u{1F1EB}",r:"Africa",t:"2",s:6.5,v:89000,ch:38000,p:8,si:43.2,la:12.24,ln:-1.56,rf:{c:4,po:5,g:4,d:4,gi:4},ty:["child","labor","soldiers"],no:"Burkina Faso faces escalating security crisis. Children forced into artisanal gold mining. Internally displaced persons (2M+) highly vulnerable. Armed groups recruit children as soldiers and forced laborers."},
-KHM:{n:"Cambodia",f:"\u{1F1F0}\u{1F1ED}",r:"Asia",t:"3",s:7.6,v:265000,ch:72000,p:28,si:61.8,la:12.57,ln:104.99,rf:{c:1,po:4,g:5,d:2,gi:4},ty:["sexual","labor","child","domestic"],no:"Cambodia is a major source, transit, and destination. Cyber-scam operations in Sihanoukville and Poipet trap foreign workers. Children exploited in brick kilns, fishing, and begging. Orphanage tourism drives child exploitation. UNODC identified Cambodia as epicenter of forced criminality in scam compounds."},
+KHM:{n:"Cambodia",f:"\u{1F1F0}\u{1F1ED}",r:"Asia",t:"3",s:7.6,v:265000,ch:72000,p:28,si:61.8,la:12.57,ln:104.99,rf:{c:1,po:4,g:5,d:2,gi:4},ty:["sexual","labor","child","domestic"],no:"US TIP 2025: Designated as STATE SPONSOR OF TRAFFICKING — first such designation in TIP history. Senior officials intimidated victims, impeded investigations, and financially benefited from forced criminality in scam compounds. Cambodia is a major source, transit, and destination. Cyber-scam operations in Sihanoukville and Poipet trap foreign workers. Children exploited in brick kilns, fishing, and begging. Orphanage tourism drives child exploitation. UNODC identified Cambodia as epicenter of forced criminality in scam compounds."},
 CMR:{n:"Cameroon",f:"\u{1F1E8}\u{1F1F2}",r:"Africa",t:"2W",s:6.2,v:72000,ch:21000,p:18,si:39.5,la:7.37,ln:12.35,rf:{c:3,po:4,g:4,d:3,gi:4},ty:["child","labor","sexual","soldiers"],no:"Cameroon faces trafficking linked to Boko Haram conflict in the north and Anglophone crisis. Children recruited by armed groups. Internal trafficking from rural to urban areas. Transit point for Central African trafficking."},
 CAN:{n:"Canada",f:"\u{1F1E8}\u{1F1E6}",r:"Americas",t:"1",s:2.0,v:17000,ch:2400,p:102,si:7.8,la:56.13,ln:-106.35,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor","begging"],no:"Canada is a source, transit, and destination. Indigenous women and girls disproportionately trafficked for sexual exploitation. Temporary foreign workers in agriculture vulnerable to forced labor. StatCan: 549 police-reported trafficking incidents in 2022. Human trafficking convictions increased 26% over 5 years."},
 CAF:{n:"Central African Republic",f:"\u{1F1E8}\u{1F1EB}",r:"Africa",t:"3",s:8.5,v:180000,ch:85000,p:0,si:72.4,la:6.61,ln:20.94,rf:{c:5,po:5,g:5,d:5,gi:5},ty:["child","labor","sexual","marriage"],no:"CAR is devastated by armed conflict. Children recruited by armed groups (anti-balaka, ex-Seleka). Sexual violence used as weapon of war. 1.5M internally displaced. Government has virtually no capacity for anti-trafficking efforts."},
@@ -336,7 +936,8 @@ DOM:{n:"Dominican Republic",f:"\u{1F1E9}\u{1F1F4}",r:"Americas",t:"2W",s:5.6,v:5
 ECU:{n:"Ecuador",f:"\u{1F1EA}\u{1F1E8}",r:"Americas",t:"2",s:5.2,v:42000,ch:14000,p:42,si:28.5,la:-1.83,ln:-78.18,rf:{c:2,po:3,g:3,d:3,gi:3},ty:["sexual","labor","child","domestic"],no:"Ecuador is source, transit, and destination. Venezuelan refugees (500K+) highly vulnerable. Colombian conflict spillover. Internal trafficking of indigenous communities. Child labor in banana, mining, and shrimp industries. Gang violence escalation has worsened trafficking."},
 EGY:{n:"Egypt",f:"\u{1F1EA}\u{1F1EC}",r:"Africa",t:"2W",s:5.8,v:210000,ch:58000,p:68,si:35.6,la:26.82,ln:30.8,rf:{c:2,po:3,g:4,d:3,gi:4},ty:["labor","sexual","child","domestic"],no:"Egypt is a source, transit, and destination. Syrian, Eritrean, Ethiopian refugees exploited. Sinai trafficking route is extremely dangerous. Street children in Cairo vulnerable. Women trafficked for domestic servitude in Gulf states."},
 SLV:{n:"El Salvador",f:"\u{1F1F8}\u{1F1FB}",r:"Americas",t:"2",s:5.8,v:28000,ch:9500,p:24,si:33.8,la:13.79,ln:-88.9,rf:{c:3,po:4,g:3,d:4,gi:3},ty:["sexual","child","labor","soldiers"],no:"Gang violence (MS-13, Barrio 18) drives forced recruitment of children. Women and girls trafficked for sexual exploitation. Significant outward migration creates vulnerability in transit through Guatemala and Mexico. Bukele's state of exception has reduced some gang activity but created new vulnerabilities."},
-GNQ:{n:"Equatorial Guinea",f:"\u{1F1EC}\u{1F1F6}",r:"Africa",t:"3",s:6.8,v:18000,ch:5200,p:0,si:45.2,la:1.65,ln:10.27,rf:{c:1,po:3,g:5,d:1,gi:4},ty:["labor","child","domestic","marriage"],no:"Equatorial Guinea is Tier 3. Children from neighboring countries trafficked for domestic servitude and market labor. Government has made no significant anti-trafficking efforts."},
+GNQ:{n:"Equatorial Guinea",f:"\u{1F1EC}\u{1F1F6}",r:"Africa",t:"2W",s:6.8,v:18000,ch:5200,p:0,si:45.2,la:1.65,ln:10.27,rf:{c:1,po:3,g:5,d:1,gi:4},ty:["labor","child","domestic","marriage"],no:"US TIP 2025: Upgraded to Tier 2 Watch List from Tier 3. Children from neighboring countries trafficked for domestic servitude and market labor. Government has made no significant anti-trafficking efforts."},
+GNB:{n:"Guinea-Bissau",f:"\u{1F1EC}\u{1F1FC}",r:"Africa",t:"2W",s:6.5,v:28000,ch:14000,p:3,si:42.1,la:11.80,ln:-15.18,rf:{c:2,po:5,g:5,d:2,gi:4},ty:["child","labor","domestic"],no:"US TIP 2025: Upgraded to Tier 2 Watch List from Tier 3. Guinea-Bissau is a source country for children trafficked to Senegal for forced begging in Quranic schools (talibes). Boys subjected to forced labor in agriculture. Women and girls in domestic servitude. Limited government resources but increased efforts."},
 ERI:{n:"Eritrea",f:"\u{1F1EA}\u{1F1F7}",r:"Africa",t:"3",s:9.8,v:320000,ch:95000,p:0,si:93.1,la:15.18,ln:39.78,rf:{c:4,po:5,g:5,d:5,gi:5},ty:["labor","child","sexual"],no:"Eritrea has the highest prevalence rate in Africa. Indefinite national military service constitutes state-imposed forced labor. Eritreans fleeing face trafficking in Sudan, Libya, Egypt. Sinai trafficking network exploited Eritrean refugees. Government is both perpetrator and enabler of forced labor."},
 ETH:{n:"Ethiopia",f:"\u{1F1EA}\u{1F1F9}",r:"Africa",t:"2",s:6.8,v:890000,ch:310000,p:65,si:45.2,la:9.15,ln:40.49,rf:{c:4,po:4,g:4,d:4,gi:4},ty:["labor","domestic","child"],no:"Ethiopia is a major source country. Workers trafficked to Gulf states (Saudi Arabia, UAE, Kuwait) for domestic servitude. Tigray conflict created massive displacement and exploitation. Children exploited in agriculture and weaving. 4.5M internally displaced."},
 FRA:{n:"France",f:"\u{1F1EB}\u{1F1F7}",r:"Europe",t:"1",s:2.5,v:39000,ch:5200,p:245,si:10.2,la:46.23,ln:2.21,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor"],no:"France is a destination and transit country. Nigerian women in forced prostitution. Unaccompanied minors from West Africa and Afghanistan. Roma and Eastern European victims in forced criminality. Paris suburbs are exploitation hotspots. France has strong legal framework and dedicated OCRTEH police unit."},
@@ -399,12 +1000,12 @@ RWA:{n:"Rwanda",f:"\u{1F1F7}\u{1F1FC}",r:"Africa",t:"2",s:4.5,v:28000,ch:8500,p:
 SAU:{n:"Saudi Arabia",f:"\u{1F1F8}\u{1F1E6}",r:"Asia",t:"2W",s:6.5,v:240000,ch:18000,p:22,si:42.6,la:23.89,ln:45.08,rf:{c:1,po:1,g:4,d:3,gi:5},ty:["labor","domestic"],no:"Saudi Arabia is a major destination. Kafala system enables exploitation of 9M+ foreign workers. Domestic workers from Ethiopia, Philippines, Indonesia face abuse — passport confiscation, wage theft, physical and sexual violence. Construction workers from South Asia in debt bondage. Government implemented some reforms but enforcement is weak."},
 SEN:{n:"Senegal",f:"\u{1F1F8}\u{1F1F3}",r:"Africa",t:"2",s:5.8,v:58000,ch:25000,p:12,si:34.2,la:14.5,ln:-14.45,rf:{c:1,po:4,g:3,d:2,gi:4},ty:["child","labor"],no:"Senegal faces significant child trafficking. 100,000+ talibe boys forced into begging by marabouts in Quranic schools (daaras). Children in gold mining, domestic work. Women trafficked to Gulf states. Government has taken steps but enforcement of talibe protection remains weak."},
 SOM:{n:"Somalia",f:"\u{1F1F8}\u{1F1F4}",r:"Africa",t:"3",s:9.2,v:280000,ch:125000,p:0,si:82.8,la:5.15,ln:46.2,rf:{c:5,po:5,g:5,d:5,gi:5},ty:["child","sexual","labor","marriage"],no:"Somalia is one of the world's most severe trafficking situations. Al-Shabaab forcibly recruits children as soldiers and sex slaves. 3.8M internally displaced. Women and girls face forced marriage, sexual exploitation. Somali diaspora sometimes subjected to forced labor. Government capacity near zero."},
-ZAF:{n:"South Africa",f:"\u{1F1FF}\u{1F1E6}",r:"Africa",t:"2",s:5.2,v:155000,ch:42000,p:62,si:30.2,la:-30.56,ln:22.94,rf:{c:1,po:4,g:2,d:2,gi:3},ty:["sexual","labor"],no:"South Africa is a destination and source. Migrants from Zimbabwe, Mozambique, Ethiopia exploited. Ukuthwala (bride abduction) leads to forced marriage. Children in domestic servitude and sex trafficking. Johannesburg, Durban, Cape Town are exploitation hubs."},
+ZAF:{n:"South Africa",f:"\u{1F1FF}\u{1F1E6}",r:"Africa",t:"2W",s:5.2,v:155000,ch:42000,p:62,si:30.2,la:-30.56,ln:22.94,rf:{c:1,po:4,g:2,d:2,gi:3},ty:["sexual","labor"],no:"US TIP 2025: Downgraded to Tier 2 Watch List. South Africa is a destination and source. Migrants from Zimbabwe, Mozambique, Ethiopia exploited. Ukuthwala (bride abduction) leads to forced marriage. Children in domestic servitude and sex trafficking. Johannesburg, Durban, Cape Town are exploitation hubs."},
 SSD:{n:"South Sudan",f:"\u{1F1F8}\u{1F1F8}",r:"Africa",t:"3",s:9.6,v:410000,ch:190000,p:0,si:90.8,la:6.88,ln:31.31,rf:{c:5,po:5,g:5,d:5,gi:5},ty:["child","sexual","labor","marriage","soldiers"],no:"South Sudan faces one of the world's worst trafficking crises. All armed parties recruit child soldiers (19,000+ since 2013). Sexual violence as weapon of war. 2.2M refugees, 2M IDPs. Girls subjected to forced marriage as conflict currency. Cattle camp labor exploitation."},
 ESP:{n:"Spain",f:"\u{1F1EA}\u{1F1F8}",r:"Europe",t:"1",s:2.8,v:38000,ch:5400,p:178,si:12.8,la:40.46,ln:-3.75,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor"],no:"Spain is a major destination in Europe. Nigerian and Romanian women in forced prostitution. Latin American victims (Colombian, Paraguayan, Brazilian) increasing. Forced labor in agriculture (Huelva berry picking, Almeria greenhouses). Unaccompanied minors from Morocco. Strong legal framework with specialized prosecutors."},
 LKA:{n:"Sri Lanka",f:"\u{1F1F1}\u{1F1F0}",r:"Asia",t:"2W",s:4.8,v:52000,ch:12000,p:22,si:26.5,la:7.87,ln:80.77,rf:{c:1,po:3,g:3,d:2,gi:3},ty:["labor","domestic","sexual"],no:"Sri Lanka is a source and destination. Domestic workers in Gulf states face exploitation. Children in domestic work, fishing, and tourism-related sexual exploitation. Economic crisis (2022) increased migration and vulnerability."},
 SDN:{n:"Sudan",f:"\u{1F1F8}\u{1F1E9}",r:"Africa",t:"3",s:9.1,v:465000,ch:195000,p:2,si:81.6,la:12.86,ln:30.22,rf:{c:5,po:5,g:5,d:5,gi:5},ty:["child","sexual","labor","soldiers"],no:"Sudan faces catastrophic trafficking crisis amid civil war (2023-present). RSF and SAF both recruit children. Sexual violence widespread. 9M+ displaced — largest displacement crisis globally. Eritrean and Ethiopian refugees exploited. Gold mining forced labor in Darfur. Sinai trafficking route origin."},
-SUR:{n:"Suriname",f:"\u{1F1F8}\u{1F1F7}",r:"Americas",t:"2W",s:5.3,v:6500,ch:1800,p:4,si:30.5,la:3.92,ln:-56.03,rf:{c:1,po:3,g:4,d:2,gi:3},ty:["sexual","labor"],no:"Gold mining interior is trafficking hotspot. Brazilian, Guyanese, Chinese migrants exploited in mining and sex trade. Sex trafficking in Paramaribo. Indigenous and Maroon communities vulnerable."},
+SUR:{n:"Suriname",f:"\u{1F1F8}\u{1F1F7}",r:"Americas",t:"2",s:5.3,v:6500,ch:1800,p:4,si:30.5,la:3.92,ln:-56.03,rf:{c:1,po:3,g:4,d:2,gi:3},ty:["sexual","labor"],no:"US TIP 2025: Upgraded to Tier 2. Gold mining interior is trafficking hotspot. Brazilian, Guyanese, Chinese migrants exploited in mining and sex trade. Sex trafficking in Paramaribo. Indigenous and Maroon communities vulnerable."},
 SYR:{n:"Syria",f:"\u{1F1F8}\u{1F1FE}",r:"Asia",t:"3",s:9.4,v:520000,ch:210000,p:0,si:86.4,la:34.8,ln:38.99,rf:{c:5,po:5,g:5,d:5,gi:5},ty:["child","sexual","labor","marriage"],no:"Syria's civil war created catastrophic trafficking. 6.7M refugees, 6.9M IDPs. Children recruited by all armed parties. Syrian women and girls in forced marriages in neighboring countries. Refugee exploitation in Turkey, Jordan, Lebanon. ISIS subjected Yazidis to sexual slavery."},
 TJK:{n:"Tajikistan",f:"\u{1F1F9}\u{1F1EF}",r:"Asia",t:"2W",s:5.5,v:45000,ch:8500,p:22,si:32.8,la:38.86,ln:71.28,rf:{c:1,po:4,g:4,d:2,gi:4},ty:["labor","sexual"],no:"Tajikistan is a source country. Workers exploited in Russia, Kazakhstan, UAE in construction and agriculture. Women trafficked for sexual exploitation. Cotton harvest formerly used forced labor (reduced). Remittances = 30%+ of GDP, indicating labor migration vulnerability."},
 TZA:{n:"Tanzania",f:"\u{1F1F9}\u{1F1FF}",r:"Africa",t:"2",s:5.5,v:98000,ch:38000,p:18,si:33.2,la:-6.37,ln:34.89,rf:{c:1,po:4,g:3,d:3,gi:3},ty:["child","labor","domestic"],no:"Tanzania is a source and destination. Children exploited in mining (tanzanite, gold), domestic work, and commercial agriculture. Women trafficked to Gulf states and South Africa. Tanzanian children exploited in fishing on Lake Victoria."},
@@ -414,14 +1015,15 @@ TUN:{n:"Tunisia",f:"\u{1F1F9}\u{1F1F3}",r:"Africa",t:"2W",s:4.5,v:28000,ch:5200,
 TUR:{n:"Turkey",f:"\u{1F1F9}\u{1F1F7}",r:"Europe",t:"2W",s:5.2,v:310000,ch:68000,p:78,si:30.5,la:38.96,ln:35.24,rf:{c:2,po:2,g:3,d:4,gi:3},ty:["labor","sexual","child","domestic"],no:"Turkey hosts 3.6M Syrian refugees — many in exploitation. Child labor in textile, agriculture, and seasonal work. Women from Central Asia, Eastern Europe trafficked for sexual exploitation. Istanbul, Gaziantep, Sanliurfa are hotspots. Turkey is a major transit country for trafficking to Europe."},
 TKM:{n:"Turkmenistan",f:"\u{1F1F9}\u{1F1F2}",r:"Asia",t:"3",s:7.0,v:58000,ch:8500,p:0,si:48.5,la:38.97,ln:59.56,rf:{c:1,po:3,g:5,d:1,gi:4},ty:["labor"],no:"Turkmenistan is Tier 3. Government imposes forced labor in annual cotton harvest — public sector workers, students compelled to pick cotton. Citizens trafficked to Turkey for forced labor. Authoritarian state with no independent monitoring."},
 UGA:{n:"Uganda",f:"\u{1F1FA}\u{1F1EC}",r:"Africa",t:"2",s:6.0,v:189000,ch:72000,p:28,si:37.5,la:1.37,ln:32.29,rf:{c:2,po:4,g:3,d:3,gi:4},ty:["child","labor","sexual"],no:"Uganda is a source and destination. Children exploited in fishing, domestic work, commercial agriculture. Karamojong children trafficked to Kampala for begging. Ugandan workers exploited in Gulf states, China. 1.5M refugees from DRC, South Sudan are vulnerable. LRA legacy of child soldier recruitment."},
-UKR:{n:"Ukraine",f:"\u{1F1FA}\u{1F1E6}",r:"Europe",t:"2",s:6.2,v:218000,ch:42000,p:95,si:38.2,la:48.38,ln:31.17,rf:{c:5,po:3,g:3,d:5,gi:2},ty:["sexual","labor","child"],no:"Ukraine faces severe trafficking crisis since 2022 Russian invasion. 6M+ refugees and 5.9M IDPs extremely vulnerable. Women and children face exploitation in Europe. Russian forces documented deporting Ukrainian children. Men subjected to forced labor in occupied territories. Pre-war, Ukraine was a major source for sexual exploitation in EU."},
+UKR:{n:"Ukraine",f:"\u{1F1FA}\u{1F1E6}",r:"Europe",t:"2",s:6.2,v:230000,ch:48000,p:95,si:38.2,la:48.38,ln:31.17,rf:{c:5,po:3,g:3,d:5,gi:2},ty:["sexual","labor","child"],no:"Ukraine faces severe trafficking crisis since 2022 Russian invasion. UNODC (Feb 2025): 6.7M refugees abroad, 14M total displaced (35% of population). 277 domestic trafficking cases investigated (2022-2023): 49% labor, 21% forced criminality, 29% sexual. 402 Ukrainian victims recorded across EU in 2022. Children trafficked for forced labor, begging, and illegal adoption. Russian forces documented deporting Ukrainian children."},
 ARE:{n:"United Arab Emirates",f:"\u{1F1E6}\u{1F1EA}",r:"Asia",t:"2",s:4.5,v:92000,ch:5200,p:35,si:23.8,la:23.42,ln:53.85,rf:{c:1,po:1,g:3,d:2,gi:3},ty:["labor","domestic"],no:"UAE is a major destination. Migrant workers from South Asia, Southeast Asia, Africa exploited in construction, hospitality, domestic work. Dubai is a hub for trafficking in persons. Kafala reforms ongoing but enforcement inconsistent. Former child camel jockey trafficking addressed."},
 GBR:{n:"United Kingdom",f:"\u{1F1EC}\u{1F1E7}",r:"Europe",t:"1",s:2.4,v:36000,ch:5800,p:289,si:9.8,la:55.38,ln:-3.44,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor"],no:"UK is a destination country. NRM identified 17,004 potential victims in 2023 (+18% YoY). Albanian, Vietnamese, Nigerian nationals. County lines drug trafficking exploits children. Modern Slavery Act 2015. Vietnamese nationals in cannabis cultivation and nail bars. Car wash exploitation."},
 USA:{n:"United States",f:"\u{1F1FA}\u{1F1F8}",r:"Americas",t:"1",s:2.5,v:403000,ch:62000,p:2486,si:10.5,la:37.09,ln:-95.71,rf:{c:1,po:2,g:1,d:1,gi:1},ty:["sexual","labor"],no:"USA is source, transit, and destination. Polaris Hotline: 51,593 cases reported in 2023. Agricultural workers (H-2A visa) exploited in farms. Sex trafficking of minors by domestic and foreign networks. NCMEC CyberTipline received 36.2M CSAM reports. FBI Operation Cross Country rescued 121 minors. Undocumented immigrants highly vulnerable. Strong federal prosecution — DOJ secured 527 convictions in 2023."},
 URY:{n:"Uruguay",f:"\u{1F1FA}\u{1F1FE}",r:"Americas",t:"2",s:3.2,v:5500,ch:1200,p:28,si:14.2,la:-32.52,ln:-55.77,rf:{c:1,po:2,g:1,d:1,gi:1},ty:["sexual"],no:"Uruguay is primarily a source country. Women and girls trafficked to Spain, Italy, Argentina for sexual exploitation. Internal trafficking from Rivera and border areas to Montevideo. Comparatively strong legal framework in the region."},
 UZB:{n:"Uzbekistan",f:"\u{1F1FA}\u{1F1FF}",r:"Asia",t:"2",s:5.5,v:98000,ch:15000,p:52,si:32.8,la:41.38,ln:64.59,rf:{c:1,po:3,g:4,d:1,gi:3},ty:["labor","sexual"],no:"Uzbekistan is a source country. Historic state-imposed forced labor in cotton harvest has been significantly reduced under Mirziyoyev reforms. Workers trafficked to Russia, Kazakhstan, Turkey for construction and agriculture. ILO verified end of systematic forced labor in cotton in 2022."},
 VEN:{n:"Venezuela",f:"\u{1F1FB}\u{1F1EA}",r:"Americas",t:"3",s:7.8,v:186000,ch:52000,p:4,si:64.2,la:6.42,ln:-66.59,rf:{c:3,po:5,g:5,d:5,gi:3},ty:["sexual","labor","child"],no:"Venezuela's humanitarian crisis generated the largest displacement in the Western Hemisphere (7.7M+). Women and girls face sexual exploitation in Colombia, Ecuador, Peru, Brazil, Trinidad. Arco Minero del Orinoco subjects workers and children to forced mining labor. Government does not meet minimum standards. Venezuelan victims identified across 17+ countries.",ex:{displacedPopulation:7700000,victimsAbroad:42000,childLabor:280000,arcoMineroVictims:15000,destinations:"Colombia, Peru, Ecuador, Chile, Brazil, Trinidad",sr:["R4V Platform","UNHCR","IOM","CTDC","ENCOVI"]}},
-VNM:{n:"Vietnam",f:"\u{1F1FB}\u{1F1F3}",r:"Asia",t:"2W",s:5.8,v:448000,ch:95000,p:42,si:35.8,la:14.06,ln:108.28,rf:{c:1,po:3,g:4,d:2,gi:3},ty:["labor","sexual"],no:"Vietnam is a major source country. Workers trafficked to China, UK, Europe, Gulf states. Women in forced marriages to Chinese men. Vietnamese exploited in UK cannabis farms, nail bars. Children in forced begging. Cyber-scam compound victims in Cambodia, Myanmar, Laos."},
+VNM:{n:"Vietnam",f:"\u{1F1FB}\u{1F1F3}",r:"Asia",t:"2",s:5.8,v:448000,ch:95000,p:42,si:35.8,la:14.06,ln:108.28,rf:{c:1,po:3,g:4,d:2,gi:3},ty:["labor","sexual"],no:"US TIP 2025: Upgraded to Tier 2. Vietnam is a major source country. Workers trafficked to China, UK, Europe, Gulf states. Women in forced marriages to Chinese men. Vietnamese exploited in UK cannabis farms, nail bars. Children in forced begging. Cyber-scam compound victims in Cambodia, Myanmar, Laos."},
+BRN:{n:"Brunei",f:"\u{1F1E7}\u{1F1F3}",r:"Asia",t:"3",s:4.8,v:8500,ch:1200,p:2,si:15.2,la:4.94,ln:114.95,rf:{c:1,po:1,g:3,d:1,gi:3},ty:["labor","domestic"],no:"US TIP 2025: DOWNGRADED to Tier 3 from Tier 2 Watch List. Brunei does not meet minimum standards and is not making significant efforts. Migrant workers in domestic servitude and forced labor in construction and service sectors. Kafala-style sponsorship system restricts worker mobility."},
 YEM:{n:"Yemen",f:"\u{1F1FE}\u{1F1EA}",r:"Asia",t:"3",s:9.3,v:320000,ch:140000,p:0,si:84.5,la:15.55,ln:48.52,rf:{c:5,po:5,g:5,d:5,gi:5},ty:["child","sexual","labor","soldiers"],no:"Yemen faces catastrophic humanitarian crisis. Houthi forces recruit children as soldiers (estimated 2,000+ in 2023). Ethiopian and Somali migrants exploited in transit. Child marriage rates among highest globally. 4.5M IDPs. No functioning anti-trafficking capacity."},
 ZMB:{n:"Zambia",f:"\u{1F1FF}\u{1F1F2}",r:"Africa",t:"2",s:5.5,v:62000,ch:24000,p:18,si:33.2,la:-13.13,ln:28.28,rf:{c:1,po:4,g:3,d:2,gi:3},ty:["child","labor"],no:"Zambia is a source and transit. Children in domestic servitude, agriculture, mining. Women trafficked to South Africa, Europe. Chinese-owned companies linked to forced labor in mining. Transit for trafficking between DRC, Tanzania, and southern Africa."},
 ZWE:{n:"Zimbabwe",f:"\u{1F1FF}\u{1F1FC}",r:"Africa",t:"2W",s:6.0,v:78000,ch:28000,p:8,si:37.8,la:-19.02,ln:29.15,rf:{c:1,po:5,g:4,d:3,gi:3},ty:["labor","sexual","child","domestic"],no:"Zimbabwe is a source country. Economic collapse drives migration to South Africa where Zimbabweans face exploitation. Women trafficked to Kuwait, Saudi Arabia, China. Children in domestic servitude and agriculture. Artisanal mining exploitation. Government anti-trafficking efforts are minimal."},
@@ -447,13 +1049,69 @@ CYP:{n:"Cyprus",f:"\u{1F1E8}\u{1F1FE}",r:"Europe",t:"2",s:3.5,v:8000,ch:1200,p:3
 MLT:{n:"Malta",f:"\u{1F1F2}\u{1F1F9}",r:"Europe",t:"2",s:3.2,v:5000,ch:600,p:25,si:12.8,la:35.94,ln:14.38,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["labor","sexual"],no:"Malta is a destination country. African migrants arriving by sea face forced labor. Massage parlor exploitation involving Asian women. Construction sector vulnerabilities. Government has anti-trafficking legislation and cooperates with EU mechanisms."},
 ISL:{n:"Iceland",f:"\u{1F1EE}\u{1F1F8}",r:"Europe",t:"1",s:1.5,v:1200,ch:100,p:12,si:4.2,la:64.96,ln:-19.02,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["labor","sexual"],no:"Iceland is a destination country. Workers from Eastern Europe, Philippines face labor exploitation in construction, restaurants. Some cases of sexual exploitation. Small scale due to population. Government has strong legal framework and National Action Plan since 2009."},
 FJI:{n:"Fiji",f:"\u{1F1EB}\u{1F1EF}",r:"Oceania",t:"2",s:4.0,v:8000,ch:2500,p:8,si:20.5,la:-17.71,ln:178.07,rf:{c:1,po:3,g:2,d:1,gi:3},ty:["labor","sexual","child"],no:"Fiji is a source, transit, and destination country. Children subjected to sex trafficking and forced labor, including in agriculture and fishing. Chinese and other Asian workers face forced labor. Fijian women trafficked to other Pacific islands. Government enacted anti-trafficking legislation in 2009."},
-MDG:{n:"Madagascar",f:"\u{1F1F2}\u{1F1EC}",r:"Africa",t:"2W",s:7.2,v:145000,ch:62000,p:8,si:52.3,la:-18.77,ln:46.87,rf:{c:2,po:5,g:4,d:3,gi:5},ty:["labor","sexual","child","domestic"],no:"Madagascar is a source country. Children in domestic servitude, mica mining, vanilla farming, and sexual exploitation. Girls as young as 12 in commercial sex. Women trafficked to Lebanon, Kuwait, Saudi Arabia for domestic servitude. Extreme poverty drives vulnerability. 1 in 4 children in child labor. Government severely lacks resources for enforcement."}
+MDG:{n:"Madagascar",f:"\u{1F1F2}\u{1F1EC}",r:"Africa",t:"2W",s:7.2,v:145000,ch:62000,p:8,si:52.3,la:-18.77,ln:46.87,rf:{c:2,po:5,g:4,d:3,gi:5},ty:["labor","sexual","child","domestic"],no:"Madagascar is a source country. Children in domestic servitude, mica mining, vanilla farming, and sexual exploitation. Girls as young as 12 in commercial sex. Women trafficked to Lebanon, Kuwait, Saudi Arabia for domestic servitude. Extreme poverty drives vulnerability. 1 in 4 children in child labor. Government severely lacks resources for enforcement."},
+CHE:{n:"Switzerland",f:"\u{1F1E8}\u{1F1ED}",r:"Europe",t:"2",s:3.2,v:22000,ch:2800,p:8,si:0.5,la:46.82,ln:8.23,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor","domestic"],no:"Switzerland Tier 2 (US TIP 2025). Decentralized cantonal system creates uneven victim identification and prosecution. In 2023, courts convicted 8 traffickers under Article 182 (vs. 6 in 2022, 13 in 2021). 13 cantons have not reported a single trafficking conviction in at least 15 years. Majority of convicted traffickers receive fully suspended sentences — lenient sentencing undercuts deterrence. Swiss law does not guarantee full victim services when exploitation occurred abroad. GRETA and civil society note historically low labor trafficking prosecutions. Walk Free GSI 2023: 0.5 per 1,000. Victims primarily from Central/Eastern Europe, Latin America, and West Africa exploited in commercial sex and domestic work. Sources: US TIP 2025, Walk Free GSI 2023, GRETA Third Report Switzerland (2024)."},
+DNK:{n:"Denmark",f:"\u{1F1E9}\u{1F1F0}",r:"Europe",t:"1",s:2.2,v:3800,ch:420,p:15,si:0.6,la:55.68,ln:10.04,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor"],no:"Denmark Tier 1 (US TIP 2025) — fully meets minimum standards. Center against Human Trafficking (CMM) identified 78 victims in 2024 (32 sex trafficking, 37 labor trafficking, 9 unspecified), down from 112 in 2023. Of 78 victims, 48 female and 30 male; 4 child victims identified. Denmark did not provide prosecution/conviction statistics to the State Department for 2024 despite requests. Majority of victims are foreign nationals; most originate from Nigeria and Thailand. Denmark participated in joint Nordic research projects on labor trafficking with Finland and Sweden in 2024. Walk Free GSI 2023: 0.6 per 1,000. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/denmark), Statistics Denmark SDG 16.2.2, Walk Free GSI 2023."},
+NOR:{n:"Norway",f:"\u{1F1F3}\u{1F1F4}",r:"Europe",t:"2",s:2.8,v:4200,ch:520,p:3,si:0.5,la:60.47,ln:8.47,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor"],no:"Norway Tier 2 (US TIP 2025). Police investigated only 19 trafficking cases in 2024 (6 sex, 12 labor, 1 unspecified) — fewest since 2007 and down from 27 in 2023. Authorities prosecuted and convicted 3 traffickers (2 sex, 1 labor), up from 0 in 2023. Sentences ranged 5–15 years. Authorities identified notably fewer victims and failed to screen vulnerable populations adequately. Police continue to charge suspects under non-trafficking statutes with more lenient penalties. Primary victims from Colombia, Venezuela, and Thailand (Thai women exploited via Norwegian spouses). KOM published new victim identification guidelines in 2024. Walk Free GSI 2023: 0.5 per 1,000. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report-127), KOM Annual Report 2024, Walk Free GSI 2023."},
+SWE:{n:"Sweden",f:"\u{1F1F8}\u{1F1EA}",r:"Europe",t:"1",s:2.2,v:5800,ch:680,p:20,si:0.6,la:62.2,ln:17.55,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor"],no:"Sweden Tier 1 (US TIP 2025) — fully meets minimum standards. Swedish Migration Agency identified 680 potential victims in 2024 (119 sex, 531 labor, 30 unspecified) among asylum-seekers, up from 598 in 2023. Gender Equality Agency regional coordinators separately identified 404 potential victims (182 sex, 189 labor) in 2023. Prosecutors charged 20 alleged traffickers in 2024 (down from 37 in 2023); courts convicted 4 (3 sex, 1 labor), same as 2023. Lenient sentencing persists — suspended sentences issued. Government participated in joint Nordic labor trafficking research with Denmark and Finland. GRETA third report (2024) recommends stronger child and labor victim identification. Walk Free GSI 2023: 0.6 per 1,000. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/sweden), Migrationsverket 2024, BRA statistics, Walk Free GSI 2023."},
+FIN:{n:"Finland",f:"\u{1F1EB}\u{1F1EE}",r:"Europe",t:"1",s:2.2,v:3800,ch:420,p:12,si:1.4,la:61.92,ln:25.75,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["labor","marriage","sexual"],no:"Finland Tier 1 (US TIP 2025) — fully meets minimum standards. Finnish Police investigated 106 trafficking cases in 2024, down from 152 in 2023. National Assistance System (NAS) admitted 207 new clients in 2024; 371 new referrals registered (27% decrease from prior year); 61% women and girls. Forced labor most common form (45% of cases), followed by forced marriage (32%) and sexual exploitation (20%) — atypical pattern vs. global norms. National Police Board published new pre-trial investigation handbook in 2024. Walk Free GSI 2023: 1.4 per 1,000 (higher than neighbors, reflecting better victim identification). Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report-61), Ihmiskauppa Annual Report 2024, Migri Finland, Walk Free GSI 2023."},
+IRL:{n:"Ireland",f:"\u{1F1EE}\u{1F1EA}",r:"Europe",t:"2",s:2.8,v:2800,ch:280,p:2,si:1.1,la:53.41,ln:-8.24,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor","domestic"],no:"Ireland Tier 2 (US TIP 2025) — fourth consecutive year, does not fully meet minimum standards. In 2024, 67 victims formally identified (up from 53 in 2023): 48 sex trafficking, 15 labour trafficking, 4 unspecified. All identified victims were foreign nationals; no Irish nationals identified. Only 4 child victims identified. In 2024, courts convicted 1 sex trafficker (4.5-year sentence) — Ireland has NEVER convicted a labour trafficker under anti-trafficking law. Only 2 new labour prosecutions initiated; no new sex trafficking prosecutions for second consecutive year. Revised NRM not yet implemented. No victim has ever received compensation or restitution. Ruhama reported 35% rise in victims engaging with their services in 2025. Walk Free GSI 2023: 1.1 per 1,000. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/ireland), Law Society Ireland Gazette Oct 2025, Social Justice Ireland, Ruhama 2025, Walk Free GSI 2023."},
+LUX:{n:"Luxembourg",f:"\u{1F1F1}\u{1F1FA}",r:"Europe",t:"1",s:2.5,v:1800,ch:180,p:5,si:0.9,la:49.82,ln:6.13,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor","domestic"],no:"Luxembourg Tier 1 (US TIP 2025) — fully meets minimum standards, but declining performance. Police investigated only 13 trafficking cases in 2024 (vs. 94 in 2023, 66 in 2022) — fewest in three years. Only 4 victims officially identified in 2024 (vs. 64 in 2023) — steep decline. Prosecutors convicted fewer traffickers than 2023–2022. CCDH 2024 study found most trafficking sentences over 10 years were partially or fully suspended. Police units hired additional staff but face ongoing staffing shortages and case backlog. Luxembourg has highest per-capita victim registration rate in the EU historically (71 per million per Eurostat). Victims predominantly from non-EU countries (80%+). Walk Free GSI 2023: ~0.9 per 1,000 (estimated from EU comparison data). Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/luxembourg), Eurostat THB Statistics 2025, CCDH 2024, Walk Free GSI 2023."},
+BDI:{n:"Burundi",f:"\u{1F1E7}\u{1F1EE}",r:"Africa",t:"2",s:6.5,v:89000,ch:28000,p:318,si:7.5,la:-3.38,ln:29.36,rf:{c:3,po:5,g:4,d:4,gi:4},ty:["labor","child","domestic","soldiers"],no:"Burundi Tier 2 (US TIP 2025) — demonstrating increasing efforts. In 2024, government investigated 279 cases involving 408 suspects (277 labor, 1 sex, 1 unspecified) vs. 169 cases/190 suspects in 2023. Initiated prosecutions of 318 alleged traffickers vs. 184 in 2023. Government increased anti-trafficking funding and awarded restitution in criminal cases. However, only a small proportion of identified victims are referred to protective services. Labour inspectorate severely under-resourced. Concerns of official complicity persist. Burundi now hosts 60,000+ Congolese refugees following 2025 DRC upsurge — elevated vulnerability. Walk Free GSI 2023: 7.5 per 1,000, estimated 89,000 persons in modern slavery. Primary exploitation: children in domestic servitude, agriculture, and cross-border trafficking to Tanzania, Rwanda, DRC. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/burundi), Walk Free GSI 2023, IOM East Africa."},
+COG:{n:"Congo Republic",f:"\u{1F1E8}\u{1F1EC}",r:"Africa",t:"2W",s:6.2,v:44000,ch:18000,p:0,si:8.0,la:-4.27,ln:15.28,rf:{c:2,po:4,g:4,d:3,gi:4},ty:["child","labor","domestic"],no:"Republic of the Congo (Brazzaville) on Tier 2 Watch List (US TIP 2025) — third consecutive year. Government was granted a Tier 3 waiver because it has devoted sufficient resources to a written National Action Plan 2025-2027. Government did NOT investigate, prosecute, or convict any traffickers in 2024 — second consecutive year of zero enforcement. Formally established national anti-trafficking commission in 2024. Children — predominantly from Benin (Beninese children make up majority in Brazzaville) and other West African nations — exploited in domestic servitude and market vending in Brazzaville, Pointe-Noire, Ouesso, Dolisie, and Nkayi. Indigenous populations (Baka, Aka, Kola) face forced labor in subsistence agriculture. Walk Free GSI 2023: 8.0 per 1,000, estimated 44,000 in modern slavery. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/republic-of-the-congo), Walk Free GSI 2023, Verite Congo Report."},
+ARM:{n:"Armenia",f:"\u{1F1E6}\u{1F1F2}",r:"Europe",t:"2",s:3.8,v:5200,ch:620,p:10,si:8.9,la:40.07,ln:45.04,rf:{c:3,po:3,g:3,d:3,gi:3},ty:["sexual","labor"],no:"Armenia Tier 2 (US TIP 2025) — demonstrating increasing efforts. In 2024, law enforcement investigated 38 cases (20 sex, 18 labor) vs. 27 in 2023. Initiated prosecutions of 10 alleged traffickers (7 sex, 3 labor) vs. 8 in 2023. Government identified and referred to care 25 victims (11 sex trafficking, 14 labor trafficking), same as 2023. Allocated more funding for victim protection. However, first responders do not consistently screen vulnerable populations and long-term victim services remain inadequate. Walk Free GSI 2023: 8.9 per 1,000 (elevated vs. Western European neighbors, reflecting post-conflict vulnerability). Armenia is a source and destination country — Georgian and Russian conflict spillover increases displacement vulnerability. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/armenia), Walk Free GSI 2023, Council of Europe GRETA."},
+HRV:{n:"Croatia",f:"\u{1F1ED}\u{1F1F7}",r:"Europe",t:"2",s:3.2,v:3800,ch:480,p:13,si:5.2,la:45.1,ln:15.2,rf:{c:1,po:2,g:2,d:2,gi:2},ty:["labor","sexual"],no:"Croatia Tier 2 (US TIP 2025) — demonstrating increasing efforts. In 2024, law enforcement investigated 14 cases involving 24 suspects (4 cases/6 suspects for sex, 5 cases/11 suspects for labor, 5 cases/7 suspects for unspecified). Authorities prosecuted 13 suspected traffickers. Courts convicted 3 traffickers, all for labor trafficking. Government expanded Victim and Witness Support Offices (VWSO) in courts. Eurostat 2024: Croatia registered lowest victim rate in EU (5 per million). 80%+ of identified victims in Croatia are from non-EU countries. Croatia is a transit country on the Balkan migration route. Walk Free GSI 2023: 5.2 per 1,000. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/croatia), Eurostat THB Statistics 2024, Walk Free GSI 2023."},
+SRB:{n:"Serbia",f:"\u{1F1F8}\u{1F1EA}",r:"Europe",t:"2",s:4.2,v:7200,ch:1100,p:24,si:7.0,la:44.02,ln:20.91,rf:{c:2,po:3,g:3,d:3,gi:3},ty:["sexual","labor","child"],no:"Serbia upgraded to Tier 2 (US TIP 2025) from prior Watch List. In 2024, police filed criminal complaints against 24 new suspects (15 sex, 9 labor incl. 4 forced criminality) vs. 16 in 2023. Courts ordered restitution in 5 convictions (3 in 2023), with payments of 150,000–1,000,000 dinars ($1,340–$8,900). Center for Protection of Trafficking Victims (CPTV) adopted new victim SOPs. Government allocated significantly more funding to CPTV and — for the first time — set aside funds for anti-trafficking NGOs. Government investigated officials allegedly complicit in trafficking. Serbia is a major transit country on Western Balkan route; migrants from Afghanistan, Syria, and Iraq transiting toward EU face trafficking. Walk Free GSI 2023: 7.0 per 1,000. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/serbia), CPTV Serbia, Walk Free GSI 2023."},
+CZE:{n:"Czech Republic",f:"\u{1F1E8}\u{1F1FF}",r:"Europe",t:"1",s:2.8,v:12000,ch:1800,p:28,si:4.2,la:49.82,ln:15.47,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["labor","sexual"],no:"Czech Republic Tier 1 (US TIP 2025) — fully meets minimum standards. Government investigated significantly more trafficking cases in 2024. Ministry of Interior Program of Support and Protection of Victims of Trafficking remains primary victim support channel. Hotlines identified 0 potential victims in 2024 (vs. 8 in 2023). Nearly 400,000 Ukrainian refugees under temporary protection (as of March 2025) remain highly vulnerable to trafficking. Ukrainian migrants disproportionately exploited in sex trafficking and forced labor. Government prosecuted fewer trafficking crimes than in 2023. Proactive screening of vulnerable populations remains inadequate. Walk Free GSI 2023: 4.2 per 1,000. Czech Republic is both source and destination country within EU. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/czech-republic), Czech MoI Status Report 2023, People in Need, Walk Free GSI 2023."},
+SVK:{n:"Slovakia",f:"\u{1F1F8}\u{1F1F0}",r:"Europe",t:"2",s:3.8,v:7800,ch:4400,p:17,si:7.7,la:48.67,ln:19.7,rf:{c:1,po:2,g:2,d:2,gi:2},ty:["sexual","labor","child"],no:"Slovakia Tier 2 (US TIP 2025) — making significant efforts. Police formally identified 35 victims in 2024 (22 sex, 13 labor) vs. 38 in 2023 and 45 in 2022 — multi-year decline. 57% of identified victims were children; 7 from Roma community; 2 foreign nationals. NGOs identified 8 additional victims. Law enforcement investigated 18 cases in 2024 (12 sex, 3 labor, 3 unspecified). Prosecutors indicted 17 alleged traffickers (multi-year decrease from 25 in 2023). Courts convicted 20 traffickers vs. 18 in 2023 — however, 85% received fully suspended sentences (zero jail time), a major concern up from 56% in 2023. Slovakia closed two government-run residential 're-education facilities'. Walk Free GSI 2023: 7.7 per 1,000 (one of the highest in the EU). Slovakia is source and transit; Roma children disproportionately affected. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/slovak-republic), Walk Free GSI 2023."},
+SVN:{n:"Slovenia",f:"\u{1F1F8}\u{1F1EE}",r:"Europe",t:"1",s:2.5,v:4200,ch:520,p:4,si:4.4,la:46.15,ln:14.99,rf:{c:1,po:1,g:1,d:1,gi:1},ty:["sexual","labor","domestic"],no:"Slovenia upgraded to Tier 1 (US TIP 2025) — a significant improvement from prior Tier 2. Government convicted traffickers for the first time in four years in 2025, breaking a 4-year zero-conviction streak (2021-2024). Police signed protocol between social workers and law enforcement in 2025 on unaccompanied minors. Majority of victims proactively identified by police. However, no child victims or asylum-seeker victims identified, despite recognized risk. Government uses National Manual for Identification of Victims. EU data: Slovenia has 100% acquittal rate in trafficking court judgements (Eurostat 2024) — a structural enforcement challenge. 80%+ of identified victims from non-EU countries. Walk Free GSI 2023: 4.4 per 1,000. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/slovenia), Eurostat THB Statistics 2024, Walk Free GSI 2023."},
+LTU:{n:"Lithuania",f:"\u{1F1F1}\u{1F1F9}",r:"Europe",t:"1",s:2.8,v:5800,ch:720,p:0,si:6.1,la:55.17,ln:23.88,rf:{c:2,po:2,g:2,d:2,gi:2},ty:["labor","sexual","forced criminality"],no:"Lithuania Tier 1 (US TIP 2025) — fully meets minimum standards, but with enforcement concerns. In 2024, authorities investigated 13 new cases (1 sex, 8 labor, 4 unspecified) vs. 10 in 2023. Zero traffickers prosecuted in 2024 — significant decrease from 11 in 2023. However, courts convicted 10 traffickers (same as 2023), with prison sentences of 2–9 years. Lithuanian authorities cooperated in 19 international investigations, identifying 40 suspected traffickers abroad. Some police lacked victim-centered approach. Lithuanian authorities participate in Council of Baltic Sea States (CBSS) anti-trafficking task force. EU data (Eurostat): Lithuania has 3% acquittal rate in court judgements — among lowest, indicating strong conviction outcomes when prosecuted. Walk Free GSI 2023: 6.1 per 1,000. Lithuania is source and transit country; organized criminal networks exploit Lithuanians in Western Europe. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/lithuania), Eurostat THB 2024, Walk Free GSI 2023."},
+LVA:{n:"Latvia",f:"\u{1F1F1}\u{1F1FB}",r:"Europe",t:"2",s:3.5,v:4800,ch:580,p:13,si:3.4,la:56.88,ln:24.6,rf:{c:2,po:2,g:2,d:2,gi:2},ty:["sexual","labor","marriage"],no:"Latvia Tier 2 (US TIP 2025) — making significant efforts. In 2024, government identified 38 trafficking victims (16 sex, 22 labor). Authorities prosecuted 13 defendants under Section 154-1 (significant increase from 4 in 2023). However, courts did not convict any traffickers under Section 154-1 in 2024 (vs. 5 convictions in 2023) — a concerning reversal. Government granted first temporary residence permit to a trafficking victim. Latvia increased NGO anti-trafficking program funding. Between 2021–2024, 149 total victims identified (87 male, 62 female); 4% were children. Labour exploitation is predominant form (including sham marriages as exploitation mechanism). Latvia participates in CBSS anti-trafficking task force. Walk Free GSI 2023: 3.4 per 1,000. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/latvia), GRETA Fourth Report Latvia 2024, Walk Free GSI 2023."},
+EST:{n:"Estonia",f:"\u{1F1EA}\u{1F1EA}",r:"Europe",t:"1",s:2.5,v:2800,ch:320,p:5,si:4.1,la:58.6,ln:25.01,rf:{c:2,po:1,g:1,d:2,gi:1},ty:["sexual","labor"],no:"Estonia Tier 1 (US TIP 2025) — fully meets minimum standards. Government demonstrated serious and sustained efforts: prosecuted more traffickers and referred all identified potential victims to victim support services. In 2024, police investigated only 3 labor trafficking cases (vs. 13 in 2023) — significant decrease. Zero trafficking prosecutions in 2024 (vs. 3 in 2023). Zero convictions in 2024 (vs. 1 in 2023). Government also decreased anti-trafficking funding and victim support funding. Anti-trafficking hotline received 301 calls — 5 referred to victim services for sex trafficking, 42 for labor trafficking. No child victims identified for second consecutive year. In 2023, authorities identified 35 potential victims (33 sex, 2 labor); formally identified 2 labor victims. Eurostat: Estonia registers 5 victims per million (among lowest in EU). Estonia issued first residence permits to trafficking victims in 2024. Walk Free GSI 2023: 4.1 per 1,000. Sources: US TIP 2025 (state.gov/reports/2025-trafficking-in-persons-report/estonia), Walk Free GSI 2023, Sotsiaalkindlustusamet Estonia."}
 };
 // Expand C into full countryData format
 const countryData={};
 for(const[iso,d] of Object.entries(C)){
 countryData[iso]={name:d.n,flag:d.f,region:d.r,tier:d.t,severity:d.s,victims:d.v,children:d.ch,prosecutions:d.p,slaveryIndex:d.si,lat:d.la,lng:d.ln,riskFactors:{conflict:d.rf.c,poverty:d.rf.po,governance:d.rf.g,displacement:d.rf.d,genderInequality:d.rf.gi},types:d.ty,notes:d.no,extra:d.ex||null};
 }
+
+// ═══ SUB-NATIONAL DATA ═══
+const subNationalData={
+BRA:[
+{name:'Para',lat:-3.4,lng:-49.6,sev:8.5,detail:'423 slave labor rescues (2023). Charcoal, logging, cattle ranching'},
+{name:'Maranhao',lat:-5.3,lng:-44.3,sev:8.0,detail:'312 rescues. Primary origin state for forced labor victims'},
+{name:'Sao Paulo',lat:-23.6,lng:-46.6,sev:7.5,detail:'856 rescues. Bom Retiro garment sweatshops. Destination hub'},
+{name:'Ceara',lat:-3.7,lng:-38.5,sev:8.0,detail:'Child sexual exploitation linked to tourism. Fortaleza hotspot'},
+{name:'Bahia',lat:-12.9,lng:-38.5,sev:7.2,detail:'245 rescues. Agriculture, cocoa. Sexual exploitation'},
+{name:'Minas Gerais',lat:-19.9,lng:-43.9,sev:7.0,detail:'Coffee, mining exploitation. Significant internal trafficking'},
+{name:'Rio de Janeiro',lat:-22.9,lng:-43.2,sev:7.8,detail:'Sex tourism, favela exploitation. SaferNet: 22K CSAM reports'},
+{name:'Amazonas',lat:-3.1,lng:-60.0,sev:8.2,detail:'River trafficking, illegal mining. Venezuelan exploitation'},
+{name:'Roraima',lat:2.8,lng:-60.7,sev:8.0,detail:'Venezuelan refugee crisis. 130K+ Venezuelans. Mining exploitation'},
+{name:'Goias',lat:-15.9,lng:-49.3,sev:6.8,detail:'Agriculture, cattle ranching forced labor'},
+{name:'Pernambuco',lat:-8.1,lng:-34.9,sev:7.5,detail:'Child exploitation. Sugarcane forced labor. Zona da Mata'},
+{name:'Mato Grosso',lat:-12.6,lng:-56.1,sev:7.0,detail:'Soy, cattle ranching forced labor. Deforestation-linked'},
+],
+MEX:[
+{name:'Chiapas',lat:16.7,lng:-93.1,sev:9.0,detail:'Migration bottleneck. Tapachula. 500K+ transit annually'},
+{name:'Tlaxcala',lat:19.3,lng:-98.2,sev:9.5,detail:'Origin of sex trafficking networks. Multi-generational'},
+{name:'CDMX',lat:19.4,lng:-99.1,sev:8.0,detail:'648 investigations (SESNSP). La Merced exploitation zone'},
+{name:'Puebla',lat:19.0,lng:-98.2,sev:7.5,detail:'Connected to Tlaxcala networks. Transit point'},
+{name:'Baja California',lat:32.5,lng:-117.0,sev:8.5,detail:'Tijuana border zone. Zona Norte. Cartel-controlled'},
+{name:'Jalisco',lat:20.7,lng:-103.3,sev:8.0,detail:'CJNG territory. Forced labor, sexual exploitation'},
+{name:'Oaxaca',lat:17.1,lng:-96.7,sev:7.0,detail:'Indigenous exploitation. Child labor. Migration origin'},
+{name:'Guerrero',lat:17.4,lng:-99.5,sev:8.0,detail:'Organized crime. Forced poppy cultivation. Violence'},
+],
+IND:[
+{name:'West Bengal',lat:22.6,lng:88.4,sev:9.0,detail:'562 cases (NCRB). Kolkata red-light districts. Border trafficking'},
+{name:'Bihar',lat:25.6,lng:85.1,sev:8.5,detail:'389 cases. Bonded labor. Brick kilns. Mica mining'},
+{name:'Maharashtra',lat:19.1,lng:72.9,sev:8.0,detail:'412 cases. Mumbai Kamathipura. Garment, construction'},
+{name:'Rajasthan',lat:26.9,lng:75.8,sev:7.5,detail:'Child labor in mining, handicrafts. Bonded labor'},
+{name:'Jharkhand',lat:23.6,lng:85.3,sev:8.0,detail:'Mica mining child labor. Domestic servitude origin'},
+{name:'Uttar Pradesh',lat:26.8,lng:80.9,sev:7.8,detail:'Carpet weaving child labor. Brick kilns. GB Road Delhi'},
+{name:'Tamil Nadu',lat:11.1,lng:78.7,sev:7.0,detail:'Textile mills bonded labor. Spinning mills exploitation'},
+{name:'Karnataka',lat:15.3,lng:75.7,sev:7.0,detail:'Devadasi system. Garment industry exploitation'},
+]
+};
 
 const traffickingRoutes=[
 {name:"SE Asia → Middle East",from:[15.87,100.99],to:[24.5,54],via:[[20,85],[22,68]],severity:"high",type:"Labor & Sexual",victims:"~180K/yr",desc:"Workers from Myanmar, Cambodia, Thailand to Gulf states for forced labor and domestic servitude."},
@@ -502,7 +1160,8 @@ const traffickingRoutes=[
 {name:"Child Soldiers (Central Africa)",from:[4.85,31.58],to:[-4.4,15.3],via:[[2,28],[0,22]],severity:"critical",type:"Child Soldiers",victims:"~19K active",desc:"South Sudan, DRC, CAR: armed groups recruit children as soldiers, sex slaves, porters. UNICEF: 19,000+ child soldiers in South Sudan alone. LRA, M23, Mai-Mai groups. Ages 8-17."},
 {name:"Cannabis Farm Slavery (UK)",from:[21,106],to:[53,-1],via:[[30,70],[45,20],[50,5]],severity:"high",type:"Forced Criminality",victims:"~5K/yr",desc:"Vietnamese victims trafficked to UK for cannabis cultivation. Locked in houses for months. UK NRM: Vietnamese are #3 nationality referred. Children used as expendable labor. Gardening gangs earn £100K+/house."},
 {name:"Fishing Industry Slavery (SE Asia)",from:[13.76,100.5],to:[-5,110],via:[[5,105]],severity:"critical",type:"Forced Labor (Fishing)",victims:"~200K",desc:"Thai, Myanmar, Cambodian, Indonesian men trapped on fishing boats for years. No pay, beatings, murder at sea. AP 2015 investigation freed 2,000. ILO: 14-16 hour days. Seafood enters US/EU supply chains."},
-{name:"Surrogacy & Reproductive Trafficking",from:[19,73],to:[50,30],via:[[35,55]],severity:"medium",type:"Reproductive Trafficking",victims:"~12K/yr",desc:"India, Ukraine, Georgia, Cambodia: poor women exploited as commercial surrogates. $500-$5,000 payment vs $100K+ charges. Exploitation conditions documented. Ukraine war disrupted the industry."}
+{name:"Surrogacy & Reproductive Trafficking",from:[19,73],to:[50,30],via:[[35,55]],severity:"medium",type:"Reproductive Trafficking",victims:"~12K/yr",desc:"India, Ukraine, Georgia, Cambodia: poor women exploited as commercial surrogates. $500-$5,000 payment vs $100K+ charges. Exploitation conditions documented. Ukraine war disrupted the industry."},
+{name:"SE Asia Cyber Scam Slavery Network",from:[16.69,98.51],to:[11.55,104.92],via:[[19.74,96.13],[17.97,102.63]],severity:"critical",type:"Forced Criminality & Cyber Slavery",victims:"~300K+ trapped",desc:"Massive forced criminality network spanning Myanmar (Myawaddy, Laukkaing), Cambodia (Sihanoukville, Poipet), Laos, and Philippines. Victims from 66+ countries lured by fake job offers, held in compounds, forced to run romance/crypto scams. INTERPOL Op Liberterra III (2025): largest-ever operation against scam trafficking."}
 ];
 
 const hotspotCities=[
@@ -666,12 +1325,39 @@ const tickerItems=[
 "Europol: Roma children forced to beg earn €30K/year for trafficking networks",
 "NORC/ILO: Child labor in West African cocoa INCREASED 14% since 2019",
 "KnowTheChain: 60% of major brands fail to address forced labor in supply chains",
-"China: 30-40M 'bare branches' (excess men) driving bride trafficking demand"
+"China: 30-40M 'bare branches' (excess men) driving bride trafficking demand",
+"US TIP 2025: Cambodia designated STATE SPONSOR OF TRAFFICKING — first in TIP history",
+"US TIP 2025: Brazil DOWNGRADED to Tier 2 Watch List — concerns over enforcement gaps",
+"US TIP 2025: Brunei DOWNGRADED to Tier 3 — significant anti-trafficking failures",
+"UNODC 2024 Report: Detected victims UP 25% since 2019 globally",
+"UNODC 2024: Forced labour NOW SURPASSES sexual exploitation — 42% vs 36% of cases",
+"UNODC 2024: Child victims INCREASED 31% since 2019 — now 38% of all detected victims",
+"UNODC 2024: Women and girls = 61% of all detected trafficking victims",
+"INTERPOL Op Liberterra III (2025): 3,744 arrests, 4,414 victims rescued across 119 countries",
+"INTERPOL Op Global Chain (2025): 158 arrests, 1,194 victims safeguarded in 43 countries",
+"OHCHR (May 2025): 300,000+ people trapped in cyber-scam slavery across SE Asia",
+"UNODC (Feb 2025): 14M Ukrainians displaced — 277 trafficking cases in 2022-2023",
+"UNODC 2025: Hidden Links report reveals corruption at EVERY STAGE of trafficking",
+"NCMEC 2025: 113,500+ child sex trafficking reports — 323% increase from 2024",
+"NCMEC 2025: AI-generated CSAM reports surged 6,343% — from 6,835 to 440,419",
+"NCMEC 2025: Online enticement reports hit 518,720 — up 77% from H1 2024",
+"NCMEC 2025: Financial sextortion reports: 23,593 — up 70% year-over-year",
+"UN SG (Nov 2025): Forced criminality is NOW the fastest-growing form of trafficking",
+"Walk Free 2025: G20 imports $468B in goods at risk of forced labor annually",
+"Walk Free 2025: $14.8B in solar panels at risk — Xinjiang forced labor link",
+"Walk Free 2025: UN 2030 goal to end modern slavery AT RISK of being missed",
+"GI-TOC 2025: Criminal actors increasingly mobile — foreign actors sharpest increase since 2023",
+"EU Anti-Trafficking Directive: Member states must implement by July 2026",
+"Frontex 2025: Libya-to-Crete crossings MORE THAN TRIPLED in 2025",
+"CTDC (May 2025): 222,751 victims identified — 169 nationalities in 172 countries",
+"US DOJ FY2024: 146 federal trafficking prosecutions, 210 convictions",
+"Polaris: 112,822 total cases since inception — 218,568 victims identified"
 ];
 
 const dataSources={
 "International Organizations":[
 {n:"UNODC Global Report on TIP",u:"https://www.unodc.org/unodc/en/human-trafficking/global-report-on-trafficking-in-persons.html"},
+{n:"UNODC Hidden Links: Corruption & TIP (2025)",u:"https://www.unodc.org/documents/human-trafficking/2025/Publications/Corruption_and_TIP.pdf"},
 {n:"UNODC Knowledge Portal",u:"https://www.unodc.org/unodc/en/data-and-analysis/tip.html"},
 {n:"UNODC Data Portal",u:"https://dataunodc.un.org/"},
 {n:"UNICEF Child Labour Stats",u:"https://data.unicef.org/topic/child-protection/child-labour/"},
@@ -786,8 +1472,8 @@ const timelineData={
 2021:{victims:"42.8M",children:"10.8M",prosecutions:"7,126",change:"+14.3%"},
 2022:{victims:"49.6M",children:"12.3M",prosecutions:"9,534",change:"+33.8%"},
 2023:{victims:"49.6M",children:"12.3M",prosecutions:"11,369",change:"+19.2%"},
-2024:{victims:"49.6M",children:"12.3M",prosecutions:"11,369",change:"+8.2%"},
-2025:{victims:"~50M+",children:"~12.5M+",prosecutions:"TBD",change:"Projected"}
+2024:{victims:"49.6M",children:"12.3M",prosecutions:"12,247",change:"+7.7%"},
+2025:{victims:"~50M+",children:"~12.5M+",prosecutions:"12,800+",change:"+4.5%"}
 };
 
 // ═══ MAP ENGINE ═══
@@ -806,6 +1492,12 @@ map=L.map('map',{center:[20,10],zoom:3,minZoom:2,maxZoom:8,zoomControl:false,att
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:19,opacity:0.8}).addTo(map);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,opacity:0.5,pane:'overlayPane'}).addTo(map);
 loadGeoJson();addRoutes();addHotspots();buildRankList();buildTicker();buildSourcesList();
+map.on('moveend',updateURL);
+loadFromURL();
+renderTrendChart();
+initKeyboardNav();
+refreshLiveData();
+setInterval(()=>refreshLiveData(),1800000);
 }
 
 function getColor(s){
@@ -827,8 +1519,23 @@ if(!d.types.includes(activeFilters.type))return false;
 return true;
 }
 
+const geoNameFixes={'France':'FRA','Norway':'NOR','N. Cyprus':'CYP','Somaliland':'SOM','Kosovo':'XKX','W. Sahara':'ESH','Fr. S. Antarctic Lands':'ATF','Falkland Is.':'FLK','Greenland':'GRL','Puerto Rico':'PRI','New Caledonia':'NCL','Solomon Is.':'SLB','Vanuatu':'VUT','Timor-Leste':'TLS','Taiwan':'TWN','S. Sudan':'SSD','Dem. Rep. Congo':'COD','Central African Rep.':'CAF','Eq. Guinea':'GNQ','Côte d\'Ivoire':'CIV','Czech Rep.':'CZE','Bosnia and Herz.':'BIH','Macedonia':'MKD','Dominican Rep.':'DOM','Lao PDR':'LAO','Dem. Rep. Korea':'PRK'};
+let _nameToIso=null;
+function buildNameIndex(){if(_nameToIso)return;_nameToIso={};for(const[iso,d]of Object.entries(countryData)){_nameToIso[d.name.toLowerCase()]=iso;}}
+function resolveISO(props){
+let iso=props['ISO3166-1-Alpha-3']||props.ISO_A3||props.iso_a3;
+if(iso&&iso!=='-99'&&countryData[iso])return iso;
+const name=props.ADMIN||props.NAME||props.name||props.NAME_LONG||'';
+if(geoNameFixes[name])return geoNameFixes[name];
+buildNameIndex();
+const lower=name.toLowerCase();
+if(_nameToIso[lower])return _nameToIso[lower];
+for(const[k,v]of Object.entries(_nameToIso)){if(k.includes(lower)||lower.includes(k))return v;}
+return iso||name;
+}
+
 function countryStyle(feature){
-const iso=feature.properties['ISO3166-1-Alpha-3']||feature.properties.ISO_A3||feature.properties.iso_a3;
+const iso=resolveISO(feature.properties);
 const d=countryData[iso];
 const s=d?d.severity:null;
 const filtered=d?matchesFilters(d):true;
@@ -839,7 +1546,7 @@ function highlightFeature(e){e.target.setStyle({weight:2,color:'rgba(255,255,255
 function resetHighlight(e){if(geoJsonLayer)geoJsonLayer.resetStyle(e.target);}
 
 function onCountryClick(e){
-const iso=e.target.feature.properties['ISO3166-1-Alpha-3']||e.target.feature.properties.ISO_A3||e.target.feature.properties.iso_a3;
+const iso=resolveISO(e.target.feature.properties);
 const d=countryData[iso];
 if(d){showCountryDetail(iso,d);map.fitBounds(e.target.getBounds(),{padding:[50,50],maxZoom:5});}
 else{
@@ -850,9 +1557,9 @@ showGenericDetail(iso,name,e.target.feature.properties);
 
 function onEachCountry(feature,layer){
 layer.on({mouseover:highlightFeature,mouseout:resetHighlight,click:onCountryClick});
-const iso=feature.properties['ISO3166-1-Alpha-3']||feature.properties.ISO_A3||feature.properties.iso_a3;
+const iso=resolveISO(feature.properties);
 const d=countryData[iso];
-if(d)layer.bindTooltip('<strong>'+d.name+'</strong><br>Severity: '+d.severity+'/10<br>Tier '+d.tier,{className:'route-tooltip',sticky:true});
+if(d)layer.bindTooltip('<strong>'+d.name+'</strong><br>'+t('hotspot.severity')+': '+d.severity+'/10<br>'+t('rank.tier')+' '+d.tier,{className:'route-tooltip',sticky:true});
 }
 
 async function loadGeoJson(){
@@ -897,7 +1604,7 @@ hotspotCities.forEach((city,idx)=>{
 const sz=city.sev>=9?14:city.sev>=8?12:10;
 const c=city.sev>=9?'#e63946':city.sev>=8?'#f77f00':'#fcbf49';
 const m=L.marker([city.lat,city.lng],{icon:L.divIcon({className:'',html:'<div style="position:relative;width:'+sz+'px;height:'+sz+'px;color:'+c+'"><div style="position:absolute;width:100%;height:100%;border-radius:50%;background:'+c+';opacity:.9;box-shadow:0 0 '+sz+'px '+c+'"></div><div style="position:absolute;width:100%;height:100%;border-radius:50%;border:2px solid '+c+';animation:hotspot-pulse 2s ease-out infinite"></div><div style="position:absolute;width:100%;height:100%;border-radius:50%;border:2px solid '+c+';animation:hotspot-pulse 2s ease-out infinite;animation-delay:.7s"></div></div>',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]})}).addTo(map);
-m.bindTooltip('<strong>'+city.name+'</strong><br>'+city.type+'<br><span style="color:'+c+'">Severity: '+city.sev+'/10</span><br><span style="font-size:.65rem;color:#8a8b9e">Click for details & routes</span>',{className:'route-tooltip',direction:'top',offset:[0,-8]});
+m.bindTooltip('<strong>'+city.name+'</strong><br>'+city.type+'<br><span style="color:'+c+'">'+t('hotspot.severity')+': '+city.sev+'/10</span><br><span style="font-size:.65rem;color:#8a8b9e">'+t('hotspot.clickDetails')+'</span>',{className:'route-tooltip',direction:'top',offset:[0,-8]});
 m.on('click',()=>{map.setView([city.lat,city.lng],6,{animate:true});showHotspotDetail(city);});
 hotspotMarkers.push(m);
 });
@@ -910,7 +1617,7 @@ const connectedRoutes=city.routes?city.routes:[];
 let routeHtml='';
 if(connectedRoutes.length){
 highlightConnectedRoutes(connectedRoutes);
-routeHtml='<div style="margin-top:14px"><div class="intel-title">Connected Trafficking Routes</div><div style="display:flex;flex-direction:column;gap:6px">';
+routeHtml='<div style="margin-top:14px"><div class="intel-title">'+t('detail.connectedRoutes')+'</div><div style="display:flex;flex-direction:column;gap:6px">';
 connectedRoutes.forEach(rn=>{
 const route=traffickingRoutes.find(r=>r.name===rn);
 if(route){
@@ -922,7 +1629,7 @@ routeHtml+='</div></div>';
 }
 let newsHtml='';
 if(city.news&&city.news.length){
-newsHtml='<div style="margin-top:14px"><div class="intel-title">Recent Reports & News</div><div style="display:flex;flex-direction:column;gap:5px">';
+newsHtml='<div style="margin-top:14px"><div class="intel-title">'+t('detail.recentReports')+'</div><div style="display:flex;flex-direction:column;gap:5px">';
 city.news.forEach(n=>{
 const yearMatch=n.match(/^(\d{4}):/);
 const year=yearMatch?yearMatch[1]:'';
@@ -933,14 +1640,14 @@ newsHtml+='</div></div>';
 }
 let historyHtml='';
 if(city.history){
-historyHtml='<div style="margin-top:14px"><div class="intel-title">Historical Context</div><div style="font-size:.75rem;color:var(--text-secondary);line-height:1.55;padding:10px;background:rgba(255,255,255,.02);border-radius:8px;border-left:3px solid var(--glass-border)">'+city.history+'</div></div>';
+historyHtml='<div style="margin-top:14px"><div class="intel-title">'+t('detail.historicalContext')+'</div><div style="font-size:.75rem;color:var(--text-secondary);line-height:1.55;padding:10px;background:rgba(255,255,255,.02);border-radius:8px;border-left:3px solid var(--glass-border)">'+city.history+'</div></div>';
 }
 document.getElementById('detail-content').innerHTML=
 '<div class="detail-header"><div style="width:36px;height:36px;border-radius:50%;background:'+c+'22;display:flex;align-items:center;justify-content:center"><div style="width:12px;height:12px;border-radius:50%;background:'+c+';box-shadow:0 0 12px '+c+'"></div></div><div><div class="detail-country">'+city.name+'</div><div class="detail-region">'+city.type+'</div></div></div>'+
-'<div class="tier-badge" style="background:'+c+'22;color:'+c+';border-color:'+c+'44">SEVERITY '+city.sev+'/10'+(city.pop?' \u2022 Pop: '+city.pop:'')+'</div>'+
-(city.intel?'<div class="intel-box"><div class="intel-title">Intelligence Summary</div><div class="intel-text">'+city.intel+'</div></div>':'')+
+'<div class="tier-badge" style="background:'+c+'22;color:'+c+';border-color:'+c+'44">'+t('hotspot.severity').toUpperCase()+' '+city.sev+'/10'+(city.pop?' \u2022 '+t('hotspot.pop')+': '+city.pop:'')+'</div>'+
+(city.intel?'<div class="intel-box"><div class="intel-title">'+t('detail.intelSummary')+'</div><div class="intel-text">'+city.intel+'</div></div>':'')+
 routeHtml+newsHtml+historyHtml+
-'<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--glass-border);display:flex;justify-content:space-between;align-items:center"><div style="font-size:.65rem;color:var(--text-muted)">Sources: UNODC, US TIP Report, IOM, UNHCR, local reports</div><button onclick="clearHighlightedRoutes()" style="font-size:.65rem;padding:4px 10px;background:var(--glass);border:1px solid var(--glass-border);border-radius:6px;color:var(--text-secondary);cursor:pointer">Clear Routes</button></div>';
+'<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--glass-border);display:flex;justify-content:space-between;align-items:center"><div style="font-size:.65rem;color:var(--text-muted)">'+t('detail.sources')+'</div><button onclick="clearHighlightedRoutes()" style="font-size:.65rem;padding:4px 10px;background:var(--glass);border:1px solid var(--glass-border);border-radius:6px;color:var(--text-secondary);cursor:pointer">'+t('detail.clearRoutes')+'</button></div>';
 document.getElementById('detail-panel').classList.add('open');
 }
 
@@ -981,7 +1688,7 @@ function applyFilter(group,val,el){
 const chips=el.parentElement.querySelectorAll('.chip');
 chips.forEach(c=>c.classList.remove('active'));el.classList.add('active');
 activeFilters[group]=val;
-if(geoJsonLayer){geoJsonLayer.eachLayer(layer=>{const iso=layer.feature.properties['ISO3166-1-Alpha-3']||layer.feature.properties.ISO_A3||layer.feature.properties.iso_a3;const d=countryData[iso];const s=d?d.severity:null;const filtered=d?matchesFilters(d):true;layer.setStyle({fillColor:filtered?getColor(s):'rgba(30,32,50,0.15)',fillOpacity:s!==null&&filtered?0.55:0.08});});}
+if(geoJsonLayer){geoJsonLayer.eachLayer(layer=>{const iso=resolveISO(layer.feature.properties);const d=countryData[iso];const s=d?d.severity:null;const filtered=d?matchesFilters(d):true;layer.setStyle({fillColor:filtered?getColor(s):'rgba(30,32,50,0.15)',fillOpacity:s!==null&&filtered?0.55:0.08});});}
 buildRankList();
 }
 
@@ -1000,7 +1707,7 @@ activeCountry=iso;
 const tc=data.tier==='1'?'tier-1':data.tier==='2'?'tier-2':data.tier==='2W'?'tier-2w':'tier-3';
 const tl=data.tier==='2W'?'Tier 2 Watch List':'Tier '+data.tier;
 let riskHtml='';
-const rl={conflict:'Armed Conflict',poverty:'Poverty Level',governance:'Governance Gap',displacement:'Displacement',genderInequality:'Gender Inequality'};
+const rl={conflict:t('risk.conflict'),poverty:t('risk.poverty'),governance:t('risk.governance'),displacement:t('risk.displacement'),genderInequality:t('risk.genderInequality')};
 for(const[k,label] of Object.entries(rl)){
 const v=data.riskFactors[k];let dots='';
 for(let i=1;i<=5;i++){const cls=i<=v?(v>=4?'filled':v>=3?'filled med':'filled low'):'';dots+='<div class="risk-dot '+cls+'"></div>';}
@@ -1015,31 +1722,34 @@ if(k==='sr')continue;const m=labels[k];if(!m)continue;
 const dv=typeof v==='number'?(v>=1000?formatNum(v):v.toLocaleString()):v;
 rows+='<div class="extra-row"><span class="extra-label">'+m[0]+'</span><span class="extra-val" style="color:'+m[1]+';font-size:'+(typeof v==='string'&&v.length>25?'.66rem':'.75rem')+'">'+dv+'</span></div>';
 }
-if(rows)extraHtml='<div style="margin-top:12px"><div class="intel-title">Detailed Breakdown</div><div style="display:flex;flex-direction:column;gap:5px">'+rows+'</div>'+(data.extra.sr?'<div style="margin-top:8px;font-size:.65rem;color:var(--text-muted)"><strong>Local Sources:</strong> '+data.extra.sr.join(' | ')+'</div>':'')+'</div>';
+if(rows)extraHtml='<div style="margin-top:12px"><div class="intel-title">'+t('detail.breakdown')+'</div><div style="display:flex;flex-direction:column;gap:5px">'+rows+'</div>'+(data.extra.sr?'<div style="margin-top:8px;font-size:.65rem;color:var(--text-muted)"><strong>'+t('detail.localSources')+':</strong> '+data.extra.sr.join(' | ')+'</div>':'')+'</div>';
 }
 document.getElementById('detail-content').innerHTML=
 '<div class="detail-header"><span class="detail-flag">'+data.flag+'</span><div><div class="detail-country">'+data.name+'</div><div class="detail-region">'+data.region+'</div></div></div>'+
 '<div class="tier-badge '+tc+'">'+tl+' <span style="font-weight:400;opacity:.7">(US TIP Report)</span></div>'+
 '<div class="detail-stats">'+
-'<div class="detail-stat"><div class="val" style="color:var(--accent)">'+formatNum(data.victims)+'</div><div class="lbl">Est. Victims</div></div>'+
-'<div class="detail-stat"><div class="val" style="color:var(--orange-medium)">'+formatNum(data.children)+'</div><div class="lbl">Children Affected</div></div>'+
-'<div class="detail-stat"><div class="val" style="color:var(--green-safe)">'+formatNum(data.prosecutions)+'</div><div class="lbl">Prosecutions</div></div>'+
-'<div class="detail-stat"><div class="val">'+data.slaveryIndex+'</div><div class="lbl">Slavery Index</div></div></div>'+
-'<div style="margin-top:4px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:.78rem;color:var(--text-secondary)">Severity Score</span><span style="font-family:var(--font-mono);font-size:.9rem;font-weight:600;color:'+getColor(data.severity)+'">'+data.severity+'/10</span></div>'+
+'<div class="detail-stat"><div class="val" style="color:var(--accent)">'+formatNum(data.victims)+'</div><div class="lbl">'+t('detail.estVictims')+'</div></div>'+
+'<div class="detail-stat"><div class="val" style="color:var(--orange-medium)">'+formatNum(data.children)+'</div><div class="lbl">'+t('detail.childrenAffected')+'</div></div>'+
+'<div class="detail-stat"><div class="val" style="color:var(--green-safe)">'+formatNum(data.prosecutions)+'</div><div class="lbl">'+t('detail.prosecutions')+'</div></div>'+
+'<div class="detail-stat"><div class="val">'+data.slaveryIndex+'</div><div class="lbl">'+t('detail.slaveryIndex')+'</div></div></div>'+
+'<div style="margin-top:4px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:.78rem;color:var(--text-secondary)">'+t('detail.severityScore')+'</span><span style="font-family:var(--font-mono);font-size:.9rem;font-weight:600;color:'+getColor(data.severity)+'">'+data.severity+'/10</span></div>'+
 '<div style="height:6px;background:var(--glass);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+data.severity*10+'%;background:'+getColor(data.severity)+';border-radius:4px;transition:width .5s"></div></div></div>'+
-'<div class="risk-indicators"><div style="font-size:.78rem;font-weight:600;margin-bottom:8px;color:var(--text-primary)">Risk Indicators</div>'+riskHtml+'</div>'+
-(data.notes?'<div class="intel-box"><div class="intel-title">Country Intelligence</div><div class="intel-text">'+data.notes+'</div></div>':'')+
+'<div class="risk-indicators"><div style="font-size:.78rem;font-weight:600;margin-bottom:8px;color:var(--text-primary)">'+t('detail.riskIndicators')+'</div>'+riskHtml+'</div>'+
+(data.notes?'<div class="intel-box"><div class="intel-title">'+t('detail.intelligence')+'</div><div class="intel-text">'+data.notes+'</div></div>':'')+
 extraHtml+
-'<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--glass-border)"><div style="font-size:.65rem;color:var(--text-muted)">Sources: Walk Free GSI, US TIP Report, UNODC, ILO, CTDC</div></div>';
+renderNGODirectory(iso)+
+'<div style="margin-top:8px">'+(subNationalData[iso]?'<button onclick="showSubNational(\''+iso+'\')" class="chip" style="margin-top:8px">'+t('detail.breakdown')+' (States)</button>':'')+'</div>'+
+'<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--glass-border)"><div style="font-size:.65rem;color:var(--text-muted)">'+t('detail.sources')+'</div></div>';
 document.getElementById('detail-panel').classList.add('open');
+announce(data.name+'. '+t('hotspot.severity')+' '+data.severity+'. '+formatNum(data.victims)+' '+t('rank.victims'));
 }
 
 function showGenericDetail(iso,name,props){
 document.getElementById('detail-content').innerHTML=
 '<div class="detail-header"><div><div class="detail-country">'+name+'</div><div class="detail-region">'+iso+'</div></div></div>'+
-'<div class="intel-box"><div class="intel-title">Information</div><div class="intel-text">Detailed trafficking data for '+name+' is not yet available in our database. This country may still be affected by human trafficking. According to UNODC, trafficking in persons has been reported in virtually every country in the world. Check the US TIP Report and Walk Free Global Slavery Index for the latest assessments.</div></div>'+
-'<div style="margin-top:12px"><div class="intel-title">How to Help</div><div style="font-size:.75rem;color:var(--text-secondary);line-height:1.5">If you have data about trafficking in '+name+', please contribute to open data initiatives like CTDC (Counter Trafficking Data Collaborative) or report to local authorities and UNODC.</div></div>'+
-'<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--glass-border)"><div style="font-size:.65rem;color:var(--text-muted)">Sources: US TIP Report, UNODC Global Report</div></div>';
+'<div class="intel-box"><div class="intel-title">'+t('generic.info')+'</div><div class="intel-text">'+t('generic.noData',{country:name})+'</div></div>'+
+'<div style="margin-top:12px"><div class="intel-title">'+t('generic.help')+'</div><div style="font-size:.75rem;color:var(--text-secondary);line-height:1.5">'+t('generic.contribute',{country:name})+'</div></div>'+
+'<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--glass-border)"><div style="font-size:.65rem;color:var(--text-muted)">'+t('detail.sources')+'</div></div>';
 document.getElementById('detail-panel').classList.add('open');
 }
 
@@ -1070,8 +1780,8 @@ let entries=Object.entries(countryData).filter(([,d])=>matchesFilters(d));
 if(rf!=='all')entries=entries.filter(([,d])=>d.region===rf);
 const sorted=entries.sort((a,b)=>b[1].severity-a[1].severity).slice(0,15);
 const list=document.getElementById('rank-list');
-document.getElementById('rank-badge').textContent='TOP '+sorted.length;
-list.innerHTML=sorted.map(([iso,d],i)=>'<div class="rank-item" onclick="selectCountry(\''+iso+'\')"><span class="rank-pos">'+(i+1)+'</span><span class="rank-flag">'+d.flag+'</span><div class="rank-info"><div class="rank-name">'+d.name+'</div><div class="rank-detail">'+formatNum(d.victims)+' victims \u00b7 Tier '+d.tier+'</div></div><div class="rank-bar"><div class="rank-bar-fill" style="width:'+d.severity*10+'%;background:'+getColor(d.severity)+'"></div></div></div>').join('');
+document.getElementById('rank-badge').textContent=t('sidebar.rankBadge')+' '+sorted.length;
+list.innerHTML=sorted.map(([iso,d],i)=>'<div class="rank-item" onclick="selectCountry(\''+iso+'\')"><span class="rank-pos">'+(i+1)+'</span><span class="rank-flag">'+d.flag+'</span><div class="rank-info"><div class="rank-name">'+d.name+'</div><div class="rank-detail">'+formatNum(d.victims)+' '+t('rank.victims')+' \u00b7 '+t('rank.tier')+' '+d.tier+'</div></div><div class="rank-bar"><div class="rank-bar-fill" style="width:'+d.severity*10+'%;background:'+getColor(d.severity)+'"></div></div></div>').join('');
 }
 function filterRanking(region,el){
 const chips=el.parentElement.querySelectorAll('.chip');chips.forEach(c=>c.classList.remove('active'));el.classList.add('active');
@@ -1105,19 +1815,287 @@ function closeSources(){document.getElementById('sources-modal').classList.remov
 
 // ═══ LOADING ═══
 const loadSteps=[
-{pct:10,msg:"Loading geospatial engine..."},{pct:25,msg:"Fetching country boundaries..."},
-{pct:40,msg:"Processing "+Object.keys(countryData).length+" countries..."},{pct:55,msg:"Mapping "+hotspotCities.length+" hotspots..."},
-{pct:70,msg:"Drawing "+traffickingRoutes.length+" trafficking corridors..."},{pct:85,msg:"Connecting to "+Object.values(dataSources).flat().length+"+ data sources..."},
-{pct:95,msg:"Calibrating real-time feeds..."},{pct:100,msg:"SENTINEL online."}
+{pct:10,key:'load.geo'},{pct:25,key:'load.fetch'},
+{pct:40,key:'load.processing',params:{count:Object.keys(countryData).length}},{pct:55,key:'load.hotspots',params:{count:hotspotCities.length}},
+{pct:70,key:'load.routes',params:{count:traffickingRoutes.length}},{pct:85,key:'load.sources',params:{count:Object.values(dataSources).flat().length}},
+{pct:95,key:'load.feeds'},{pct:100,key:'load.online'}
 ];
 async function runLoading(){
 const bar=document.getElementById('loader-progress');const st=document.getElementById('load-status');
-for(const step of loadSteps){bar.style.width=step.pct+'%';st.textContent=step.msg;await new Promise(r=>setTimeout(r,300+Math.random()*200));}
+for(const step of loadSteps){bar.style.width=step.pct+'%';st.textContent=t(step.key,step.params);await new Promise(r=>setTimeout(r,300+Math.random()*200));}
 await new Promise(r=>setTimeout(r,400));document.getElementById('loading-screen').classList.add('hidden');initMap();
 }
-document.addEventListener('DOMContentLoaded',runLoading);
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim().toLowerCase() === currentLang));
+  document.documentElement.lang = currentLang === 'pt' ? 'pt-BR' : currentLang;
+  if(currentLang !== 'en') updateAllTranslations();
+  runLoading();
+});
 document.addEventListener('click',e=>{if(!e.target.closest('.search-box'))document.getElementById('search-results').classList.remove('visible');});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();closeSources();}});
+
+// ═══ EXPORT FUNCTIONS ═══
+function toggleExportMenu(){document.getElementById('export-menu').classList.toggle('visible')}
+document.addEventListener('click',e=>{if(!e.target.closest('[onclick*="toggleExportMenu"]')&&!e.target.closest('.export-dropdown'))document.getElementById('export-menu')?.classList.remove('visible')});
+
+function exportCSV(){
+const headers=['Country','ISO','Region','Tier','Severity','Victims','Children','Prosecutions','Slavery Index','Types'];
+const rows=Object.entries(countryData).map(([iso,d])=>[d.name,iso,d.region,'Tier '+d.tier,d.severity,d.victims,d.children,d.prosecutions,d.slaveryIndex,'"'+d.types.join(', ')+'"']);
+const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='sentinel_data_'+new Date().toISOString().split('T')[0]+'.csv';link.click();
+toggleExportMenu();
+}
+
+function exportPDF(){
+if(!window.jspdf){alert('PDF library loading... Please try again.');return;}
+const{jsPDF}=window.jspdf;const doc=new jsPDF();
+doc.setFontSize(20);doc.setTextColor(230,57,70);doc.text('SENTINEL Intelligence Report',14,22);
+doc.setFontSize(10);doc.setTextColor(138,139,158);doc.text('Generated: '+new Date().toLocaleDateString()+' | Source: Walk Free, UNODC, US TIP Report',14,30);
+doc.setDrawColor(255,77,109);doc.line(14,33,196,33);
+if(activeCountry&&countryData[activeCountry]){
+const d=countryData[activeCountry];
+doc.setFontSize(16);doc.setTextColor(232,230,240);doc.text(d.name+' — Country Profile',14,42);
+doc.setFontSize(10);doc.setTextColor(138,139,158);
+doc.text('Region: '+d.region+' | Tier: '+d.tier+' | Severity: '+d.severity+'/10',14,50);
+doc.text('Estimated Victims: '+formatNum(d.victims),14,58);
+doc.text('Children Affected: '+formatNum(d.children),14,65);
+doc.text('Prosecutions: '+formatNum(d.prosecutions),14,72);
+doc.text('Slavery Index: '+d.slaveryIndex,14,79);
+doc.setFontSize(9);const lines=doc.splitTextToSize(d.notes,175);doc.text(lines,14,90);
+}else{
+const tableData=Object.entries(countryData).sort((a,b)=>b[1].severity-a[1].severity).slice(0,30).map(([iso,d])=>[d.name,'Tier '+d.tier,d.severity,formatNum(d.victims),formatNum(d.children),d.prosecutions]);
+doc.autoTable({head:[['Country','Tier','Severity','Victims','Children','Prosecutions']],body:tableData,startY:40,styles:{fontSize:8,textColor:[232,230,240],cellPadding:3},headStyles:{fillColor:[230,57,70],textColor:[255,255,255]},alternateRowStyles:{fillColor:[18,22,40]}});
+}
+doc.save('sentinel_report_'+new Date().toISOString().split('T')[0]+'.pdf');
+toggleExportMenu();
+}
+
+// ═══ SHAREABLE URLs ═══
+function updateURL(){
+const params=new URLSearchParams();
+if(activeCountry)params.set('c',activeCountry);
+params.set('z',map.getZoom());
+const center=map.getCenter();params.set('lat',center.lat.toFixed(2));params.set('lng',center.lng.toFixed(2));
+if(currentLang!=='en')params.set('lang',currentLang);
+if(activeFilters.type!=='all')params.set('type',activeFilters.type);
+if(activeFilters.severity!=='all')params.set('sev',activeFilters.severity);
+history.replaceState(null,'','#'+params.toString());
+}
+
+function loadFromURL(){
+const hash=location.hash.slice(1);if(!hash)return;
+const params=new URLSearchParams(hash);
+if(params.get('lang'))setLang(params.get('lang'));
+if(params.get('lat')&&params.get('lng')&&params.get('z'))map.setView([+params.get('lat'),+params.get('lng')],+params.get('z'),{animate:false});
+if(params.get('c')){const d=countryData[params.get('c')];if(d)showCountryDetail(params.get('c'),d);}
+}
+
+// ═══ COMPARE MODE ═══
+function toggleCompare(){
+const panel=document.getElementById('compare-panel');
+panel.classList.toggle('open');
+if(panel.classList.contains('open')){
+const opts=Object.entries(countryData).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([iso,d])=>'<option value="'+iso+'">'+d.flag+' '+d.name+'</option>').join('');
+document.getElementById('compare-a').innerHTML='<option value="">-- '+t('nav.compare')+' --</option>'+opts;
+document.getElementById('compare-b').innerHTML='<option value="">-- '+t('nav.compare')+' --</option>'+opts;
+if(activeCountry)document.getElementById('compare-a').value=activeCountry;
+}
+}
+
+function updateCompare(){
+const a=countryData[document.getElementById('compare-a').value];
+const b=countryData[document.getElementById('compare-b').value];
+if(!a||!b){document.getElementById('compare-grid').innerHTML='';return;}
+const card=(d)=>'<div class="compare-card"><div style="font-size:1.5rem;margin-bottom:8px">'+d.flag+' '+d.name+'</div>'+
+'<div class="tier-badge '+(d.tier==='1'?'tier-1':d.tier==='2'?'tier-2':d.tier==='2W'?'tier-2w':'tier-3')+'">Tier '+d.tier+'</div>'+
+'<div class="detail-stats" style="margin-top:12px">'+
+'<div class="detail-stat"><div class="val" style="color:var(--accent)">'+formatNum(d.victims)+'</div><div class="lbl">'+t('detail.estVictims')+'</div></div>'+
+'<div class="detail-stat"><div class="val" style="color:var(--orange-medium)">'+formatNum(d.children)+'</div><div class="lbl">'+t('detail.childrenAffected')+'</div></div>'+
+'<div class="detail-stat"><div class="val" style="color:var(--green-safe)">'+formatNum(d.prosecutions)+'</div><div class="lbl">'+t('detail.prosecutions')+'</div></div>'+
+'<div class="detail-stat"><div class="val">'+d.slaveryIndex+'</div><div class="lbl">'+t('detail.slaveryIndex')+'</div></div></div>'+
+'<div style="margin-top:10px;font-size:.75rem;color:var(--text-secondary)">'+t('detail.severityScore')+': <strong style="color:'+getColor(d.severity)+'">'+d.severity+'/10</strong></div>'+
+'<div style="margin-top:8px;font-size:.7rem;color:var(--text-muted)">Types: '+d.types.join(', ')+'</div></div>';
+document.getElementById('compare-grid').innerHTML=card(a)+card(b);
+}
+
+// ═══ PRESENTATION MODE ═══
+let presentationMode=false;
+function togglePresentation(){
+presentationMode=!presentationMode;
+document.body.classList.toggle('presentation-mode',presentationMode);
+if(presentationMode&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{});
+else if(!presentationMode&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+}
+
+// ═══ TREND CHART ═══
+function renderTrendChart(){
+if(!window.Chart)return;
+const existing=Chart.getChart('trend-canvas');if(existing)existing.destroy();
+const canvas=document.getElementById('trend-canvas');if(!canvas)return;
+new Chart(canvas,{
+type:'line',
+data:{
+labels:Object.keys(timelineData),
+datasets:[
+{label:t('stat.victims'),data:Object.values(timelineData).map(d=>{const n=d.victims.replace(/[^0-9.]/g,'');return parseFloat(n)||0;}),borderColor:'#e63946',backgroundColor:'rgba(230,57,70,.1)',fill:true,tension:.3},
+{label:t('stat.prosecutions'),data:Object.values(timelineData).map(d=>{const n=d.prosecutions.replace(/[^0-9]/g,'');return parseInt(n)||0;}),borderColor:'#2ec4b6',backgroundColor:'rgba(46,196,178,.1)',fill:true,tension:.3,yAxisID:'y1'}
+]
+},
+options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8a8b9e',font:{size:10}}}},scales:{x:{ticks:{color:'#4e5068'}},y:{ticks:{color:'#4e5068'},title:{display:true,text:'Victims (M)',color:'#4e5068'}},y1:{position:'right',ticks:{color:'#4e5068'},title:{display:true,text:'Prosecutions',color:'#4e5068'},grid:{display:false}}}}
+});
+}
+
+// ═══ LIVE DATA ENGINE ═══
+const LiveData={
+lastFetch:0,
+cacheKey:'sentinel_live_cache',
+cacheTTL:3600000,
+
+async fetchGDELT(){
+try{
+const cached=this.getCache('gdelt');if(cached)return cached;
+const r=await fetch('https://api.gdeltproject.org/api/v2/doc/doc?query=human+trafficking+OR+modern+slavery&mode=ArtList&maxrecords=20&format=json');
+if(!r.ok)throw new Error('GDELT error');
+const data=await r.json();
+const articles=(data.articles||[]).slice(0,15).map(a=>({title:a.title,url:a.url,source:a.domain,date:a.seendate}));
+this.setCache('gdelt',articles);return articles;
+}catch(e){console.warn('GDELT fetch failed:',e);return null;}
+},
+
+async fetchReliefWeb(){
+try{
+const cached=this.getCache('reliefweb');if(cached)return cached;
+const r=await fetch('https://api.reliefweb.int/v1/reports?appname=sentinel&filter[field]=theme&filter[value]=Human+Trafficking&limit=10&sort[]=date:desc');
+if(!r.ok)throw new Error('ReliefWeb error');
+const data=await r.json();
+const reports=(data.data||[]).map(d=>({title:d.fields.title,url:d.fields.url,source:'ReliefWeb',date:d.fields.date?.created}));
+this.setCache('reliefweb',reports);return reports;
+}catch(e){console.warn('ReliefWeb fetch failed:',e);return null;}
+},
+
+getCache(key){
+try{
+const raw=localStorage.getItem(this.cacheKey+'_'+key);
+if(!raw)return null;
+const{data,ts}=JSON.parse(raw);
+if(Date.now()-ts>this.cacheTTL)return null;
+return data;
+}catch(e){return null;}
+},
+
+setCache(key,data){
+try{localStorage.setItem(this.cacheKey+'_'+key,JSON.stringify({data,ts:Date.now()}));}catch(e){}
+},
+
+getFreshness(){
+try{
+const raw=localStorage.getItem(this.cacheKey+'_gdelt');
+if(!raw)return'old';
+const{ts}=JSON.parse(raw);
+const age=Date.now()-ts;
+if(age<3600000)return'fresh';
+if(age<86400000)return'stale';
+return'old';
+}catch(e){return'old';}
+}
+};
+
+async function refreshLiveData(){
+const indicator=document.getElementById('freshness-indicator');
+if(indicator)indicator.innerHTML='<span class="freshness-dot" style="background:#fcbf49"></span> '+t('nav.refresh')+'...';
+const[gdelt,reliefweb]=await Promise.all([LiveData.fetchGDELT(),LiveData.fetchReliefWeb()]);
+if(gdelt&&gdelt.length){
+const newItems=gdelt.map(a=>'GDELT: '+a.title);
+const track=document.getElementById('ticker-track');
+if(track){
+const liveHtml=newItems.map(text=>{
+const src=text.split(':')[0];const msg=text.substring(text.indexOf(':')+1).trim();
+const time=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+return'<div class="ticker-item"><span class="ticker-source">'+src+'</span><span>'+msg.substring(0,120)+'</span><span class="ticker-time">'+time+'</span></div>';
+}).join('');
+track.innerHTML=liveHtml+track.innerHTML;
+}
+}
+updateFreshnessIndicator();
+}
+
+function updateFreshnessIndicator(){
+const f=LiveData.getFreshness();
+const indicator=document.getElementById('freshness-indicator');
+if(!indicator)return;
+const colors={fresh:'freshness-fresh',stale:'freshness-stale',old:'freshness-old'};
+const labels={fresh:'Live',stale:'1h+',old:'Offline'};
+indicator.innerHTML='<span class="freshness-dot '+colors[f]+'"></span> '+labels[f];
+}
+
+// ═══ HEATMAP ═══
+let heatmapLayer=null;
+function toggleHeatmap(){
+if(heatmapLayer){map.removeLayer(heatmapLayer);heatmapLayer=null;document.getElementById('btn-heatmap')?.classList.remove('active');return;}
+if(!L.heatLayer){console.warn('Leaflet.heat not loaded');return;}
+const data=Object.values(countryData).map(d=>[d.lat,d.lng,d.severity/10]);
+heatmapLayer=L.heatLayer(data,{radius:35,blur:25,maxZoom:6,gradient:{0.2:'#1a3a2a',0.4:'#2ec4b6',0.6:'#fcbf49',0.8:'#f77f00',1.0:'#e63946'}}).addTo(map);
+document.getElementById('btn-heatmap')?.classList.add('active');
+}
+
+// ═══ SUB-NATIONAL MARKERS ═══
+let subNatMarkers=[];
+function showSubNational(iso){
+clearSubNational();
+const data=subNationalData[iso];if(!data)return;
+data.forEach(s=>{
+const c=getColor(s.sev);
+const m=L.circleMarker([s.lat,s.lng],{radius:8,fillColor:c,fillOpacity:.7,color:'rgba(255,255,255,.3)',weight:1}).addTo(map);
+m.bindTooltip('<strong>'+s.name+'</strong><br>'+t('hotspot.severity')+': '+s.sev+'/10<br><span style="font-size:.7rem;color:#8a8b9e">'+s.detail+'</span>',{className:'route-tooltip'});
+subNatMarkers.push(m);
+});
+}
+function clearSubNational(){subNatMarkers.forEach(m=>map.removeLayer(m));subNatMarkers=[];}
+
+// ═══ NGO/HOTLINE DIRECTORY ═══
+const ngoDirectory={
+BRA:[{n:'Disque 100',p:'100',d:'National human rights hotline'},{n:'SaferNet',u:'https://www.safernet.org.br',d:'Online child exploitation reporting'},{n:'Childhood Brasil',u:'https://www.childhood.org.br',d:'Child protection'},{n:'Policia Federal',p:'194',d:'Federal Police'}],
+USA:[{n:'National Trafficking Hotline',p:'1-888-373-7888',d:'Polaris Project'},{n:'NCMEC CyberTipline',p:'1-800-843-5678',d:'Missing & exploited children'},{n:'FBI Tips',u:'https://tips.fbi.gov',d:'Report to FBI'}],
+GBR:[{n:'Modern Slavery Helpline',p:'08000 121 700',d:'UK helpline'},{n:'NCA',u:'https://www.nationalcrimeagency.gov.uk',d:'National Crime Agency'}],
+MEX:[{n:'SESNSP',p:'800-440-3690',d:'Anti-trafficking hotline'},{n:'CNDH',u:'https://www.cndh.org.mx',d:'National Human Rights Commission'}],
+COL:[{n:'Linea 122',p:'122',d:'Fiscalia General'},{n:'ICBF',p:'141',d:'Child welfare'}],
+IND:[{n:'Childline',p:'1098',d:'24hr child helpline'},{n:'Anti-Trafficking Cell',p:'011-23438091',d:'Delhi Police'}],
+PHL:[{n:'IACAT Hotline',p:'1343',d:'Inter-Agency Council Against Trafficking'}],
+THA:[{n:'Anti-Trafficking Hotline',p:'1300',d:'Ministry of Social Development'}],
+NGA:[{n:'NAPTIP',p:'+234-9-2901220',d:'National Agency for Prohibition of TIP'}],
+DEU:[{n:'Hilfetelefon',p:'08000 116 016',d:'Violence against women hotline'}],
+FRA:[{n:'MIPROF',p:'0 800 05 95 95',d:'Anti-trafficking mission'}],
+ESP:[{n:'Guardia Civil',p:'062',d:'Anti-trafficking unit'}],
+ARG:[{n:'PROTEX',p:'+54-11-6089-9002',d:'Anti-trafficking prosecution unit'}],
+PER:[{n:'Linea 1818',p:'1818',d:'Missing persons & trafficking'}],
+};
+
+function renderNGODirectory(iso){
+const ngos=ngoDirectory[iso];if(!ngos||!ngos.length)return'';
+let html='<div style="margin-top:14px"><div class="intel-title">'+t('detail.helpDirectory')+'</div><div style="display:flex;flex-direction:column;gap:5px">';
+ngos.forEach(ngo=>{
+html+='<div class="extra-row"><span style="font-size:.78rem">'+ngo.n+(ngo.p?' <strong style="color:var(--accent)">'+ngo.p+'</strong>':'')+
+'</span>'+(ngo.u?'<a href="'+ngo.u+'" target="_blank" style="color:var(--accent);font-size:.7rem">Visit</a>':'')+'</div>';
+html+='<div style="font-size:.65rem;color:var(--text-muted);padding:0 8px;margin-top:-2px">'+ngo.d+'</div>';
+});
+html+='</div></div>';return html;
+}
+
+// ═══ ACCESSIBILITY ═══
+function announce(msg){const el=document.getElementById('sr-announcer');if(!el)return;el.textContent='';setTimeout(()=>{el.textContent=msg;},100);}
+
+function initKeyboardNav(){
+document.addEventListener('keydown',e=>{
+if(e.target.closest('input,select,textarea'))return;
+if(e.key==='/'){e.preventDefault();document.getElementById('country-search').focus();}
+if(e.key==='h')toggleHeatmap();
+if(e.key==='r')toggleLayer('routes');
+if(e.key==='p')togglePresentation();
+});
+}
+
+function toggleHighContrast(){document.body.classList.toggle('high-contrast');}
 </script>
 </body>
 </html>
